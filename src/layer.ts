@@ -1,116 +1,142 @@
-import { Object3D, Vector3 } from "three";
+import {
+  BufferGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  Object3D,
+} from "three";
+import { GateDepth, GateID, GateType, LayerInfo } from "./gamelogic";
+
+export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;
+
+interface SliderInfo {
+  ob: SliderObject;
+  topleft: boolean;
+  depth: GateDepth;
+  ownedBySilver: boolean;
+}
+
+interface SliderLibrary {
+  full: SliderObject;
+  near: SliderObject;
+  mid: SliderObject;
+  far: SliderObject;
+}
 
 export default class Layer extends Object3D {
-  horizontal: boolean;
-  sliders: (Object3D | null)[];
-  topleft: boolean[];
-  depth: number[];
-
-  constructor(layer: Object3D, slider: Object3D) {
+  private horizontal: boolean;
+  private sliders: [SliderInfo, SliderInfo, SliderInfo];
+  private sliderLibrary: SliderLibrary;
+  constructor(layer: Object3D, sliders: SliderLibrary) {
     super();
-    const bla = [slider, slider.clone(true), slider.clone(true)];
-    this.sliders = bla;
+    this.sliderLibrary = sliders;
+    const bla = [
+      sliders.full.clone(true),
+      sliders.full.clone(true),
+      sliders.full.clone(true),
+    ];
+    bla[0].name = "Slider0";
+    bla[1].name = "Slider1";
+    bla[2].name = "Slider2";
 
+    this.sliders = bla.map((v) => {
+      return { ob: v as any, topleft: true, depth: 0, ownedBySilver: true };
+    }) as [SliderInfo, SliderInfo, SliderInfo];
+    (layer as any).material = new MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8,
+    });
     this.add(layer);
     this.add(bla[0]);
     this.add(bla[1]);
     this.add(bla[2]);
-
     this.horizontal = false;
-    this.topleft = [true, true, true];
-    this.depth = [0, 0, 0];
 
-    this.place_sliders();
+    this.update();
   }
-  private place_sliders() {
+
+  hasSlider(ob: Object3D): GateID | undefined {
+    for (const i of [0, 1, 2] as GateID[]) {
+      if (this.sliders[i].ob === ob) return i;
+    }
+    return undefined;
+  }
+
+  highlight_slider(gate: GateID) {
+    this.sliders[gate].ob.material.emissive.r = 0.5;
+  }
+
+  unhighlight_slider() {
+    this.sliders[0].ob.material.emissive.r = 0;
+    this.sliders[1].ob.material.emissive.r = 0;
+    this.sliders[2].ob.material.emissive.r = 0;
+  }
+
+  private update() {
     const cell_size = 5;
 
-    this.sliders[0]?.rotation.set(0, 0, 0);
-    this.sliders[1]?.rotation.set(0, 0, 0);
-    this.sliders[2]?.rotation.set(0, 0, 0);
+    for (const slider_id in this.sliders) {
+      const s = this.sliders[slider_id];
 
-    this.sliders[0]?.position.set(0, 0, 0);
-    this.sliders[1]?.position.set(0, 0, 0);
-    this.sliders[2]?.position.set(0, 0, 0);
+      s.ob.visible = s.depth <= 2;
+      s.ob.material.color.setHex(s.ownedBySilver ? 0xffffff : 0xffd700);
 
-    if (this.horizontal) {
-      this.sliders[0]?.rotateY(Math.PI / 2);
-      this.sliders[1]?.rotateY(Math.PI / 2);
-      this.sliders[2]?.rotateY(Math.PI / 2);
-    }
+      s.ob.rotation.set(0, 0, 0);
+      s.ob.position.set(0, 0, 0);
 
-    if (this.topleft[0] !== true) this.sliders[0]?.rotateY(Math.PI);
-    if (this.topleft[1] !== true) this.sliders[1]?.rotateY(Math.PI);
-    if (this.topleft[2] !== true) this.sliders[2]?.rotateY(Math.PI);
+      if (this.horizontal) s.ob.rotateY(Math.PI / 2);
+      if (!s.topleft) s.ob.rotateY(Math.PI);
+      const slot = (parseInt(slider_id) - 1) * cell_size;
+      const depth = -s.depth * cell_size * (s.topleft ? 1 : -1);
 
-    if (this.horizontal) {
-      this.sliders[0]?.position.addVectors(
-        this.sliders[0]?.position,
-        new Vector3(
-          -this.depth[0] * cell_size * (this.topleft[0] ? 1 : -1),
-          0,
-          -2 * cell_size * (this.topleft[0] ? 1 : -1)
-        )
-      );
-      this.sliders[1]?.position.addVectors(
-        this.sliders[1]?.position,
-        new Vector3(
-          -this.depth[1] * cell_size * (this.topleft[1] ? 1 : -1),
-          0,
-          -cell_size * (this.topleft[1] ? 1 : -1)
-        )
-      );
-      this.sliders[2]?.position.addVectors(
-        this.sliders[2]?.position,
-        new Vector3(
-          -this.depth[2] * cell_size * (this.topleft[2] ? 1 : -1),
-          0,
-          0
-        )
-      );
-    } else {
-      this.sliders[0]?.position.addVectors(
-        this.sliders[0]?.position,
-        new Vector3(
-          0,
-          0,
-          -this.depth[0] * cell_size * (this.topleft[0] ? 1 : -1)
-        )
-      );
-      this.sliders[1]?.position.addVectors(
-        this.sliders[1]?.position,
-        new Vector3(
-          cell_size * (this.topleft[1] ? 1 : -1),
-          0,
-          -this.depth[1] * cell_size * (this.topleft[1] ? 1 : -1)
-        )
-      );
-      this.sliders[2]?.position.addVectors(
-        this.sliders[2]?.position,
-        new Vector3(
-          2 * cell_size * (this.topleft[2] ? 1 : -1),
-          0,
-          -this.depth[2] * cell_size * (this.topleft[2] ? 1 : -1)
-        )
-      );
+      if (this.horizontal) s.ob.position.set(depth, 0, slot);
+      else s.ob.position.set(slot, 0, depth);
     }
   }
 
-  flip() {
-    this.horizontal = !this.horizontal;
+  set_horizontal(horizontal: boolean) {
+    this.horizontal = horizontal;
 
-    this.place_sliders();
+    this.update();
   }
 
-  toggle_topleft(id: number) {
-    this.topleft[id] = !this.topleft[id];
+  set_topleft(id: GateID, topleft: boolean) {
+    this.sliders[id].topleft = topleft;
 
-    this.place_sliders();
+    this.update();
   }
 
-  set_depth(id: number, depth: number) {
-    this.depth[id] = depth;
+  set_depth(id: GateID, depth: GateDepth) {
+    this.sliders[id].depth = depth;
 
-    this.place_sliders();
+    this.update();
+  }
+
+  set_silver(id: GateID, silver: boolean) {
+    this.sliders[id].ownedBySilver = silver;
+
+    this.update();
+  }
+
+  set_type(id: GateID, type: GateType) {
+    this.remove(this.sliders[id].ob);
+
+    const a: Record<GateType, SliderObject> = {
+      [GateType.Furthest]: this.sliderLibrary.far,
+      [GateType.Mid]: this.sliderLibrary.mid,
+      [GateType.Near]: this.sliderLibrary.near,
+      [GateType.None]: this.sliderLibrary.full,
+    };
+    this.sliders[id].ob = a[type].clone(true);
+
+    this.sliders[id].ob.material = new MeshStandardMaterial({
+      color: this.sliders[id].ownedBySilver ? 0xffffff : 0xffd700,
+      roughness: 0.5,
+      metalness: 0.3,
+    });
+
+    this.add(this.sliders[id].ob);
+    this.update();
   }
 }
