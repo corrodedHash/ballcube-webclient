@@ -106,16 +106,16 @@ export default class Board extends Object3D {
   static async setup(logic: BoardLogic) {
     const loader = new GLTFLoader();
 
-    const layerGLTFComplete = await asyncLoadGTLF(loader, "/models/layer.glb");
+    const layerGLTFComplete = await asyncLoadGTLF(loader, "models/layer.glb");
 
     const sliderLibrary = {
-      full: (await asyncLoadGTLF(loader, "/models/slider_full.glb")).scene
+      full: (await asyncLoadGTLF(loader, "models/slider_full.glb")).scene
         .children[0] as SliderObject,
-      near: (await asyncLoadGTLF(loader, "/models/slider_near.glb")).scene
+      near: (await asyncLoadGTLF(loader, "models/slider_near.glb")).scene
         .children[0] as SliderObject,
-      mid: (await asyncLoadGTLF(loader, "/models/slider_mid.glb")).scene
+      mid: (await asyncLoadGTLF(loader, "models/slider_mid.glb")).scene
         .children[0] as SliderObject,
-      far: (await asyncLoadGTLF(loader, "/models/slider_far.glb")).scene
+      far: (await asyncLoadGTLF(loader, "models/slider_far.glb")).scene
         .children[0] as SliderObject,
     };
     const layerGLTF = layerGLTFComplete.scene.children[0];

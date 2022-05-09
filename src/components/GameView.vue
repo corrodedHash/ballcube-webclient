@@ -155,5 +155,8 @@ watch(hey, (v) => {
 <style scoped>
 .modelview {
   border: 0.2em solid lightblue;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
 }
 </style>
