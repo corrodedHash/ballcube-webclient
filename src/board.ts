@@ -2,6 +2,13 @@ import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 
 import Layer, { SliderObject } from "./layer";
 
+import LayerModel from "@/assets/models/layer.glb";
+
+import SliderFullModel from "@/assets/models/slider_full.glb";
+import SliderFarModel from "@/assets/models/slider_far.glb";
+import SliderMidModel from "@/assets/models/slider_mid.glb";
+import SliderNearModel from "@/assets/models/slider_near.glb";
+
 import {
   Object3D,
   SphereGeometry,
@@ -106,16 +113,16 @@ export default class Board extends Object3D {
   static async setup(logic: BoardLogic) {
     const loader = new GLTFLoader();
 
-    const layerGLTFComplete = await asyncLoadGTLF(loader, "models/layer.glb");
+    const layerGLTFComplete = await asyncLoadGTLF(loader, LayerModel);
 
     const sliderLibrary = {
-      full: (await asyncLoadGTLF(loader, "models/slider_full.glb")).scene
+      full: (await asyncLoadGTLF(loader, SliderFullModel)).scene
         .children[0] as SliderObject,
-      near: (await asyncLoadGTLF(loader, "models/slider_near.glb")).scene
+      near: (await asyncLoadGTLF(loader, SliderNearModel)).scene
         .children[0] as SliderObject,
-      mid: (await asyncLoadGTLF(loader, "models/slider_mid.glb")).scene
+      mid: (await asyncLoadGTLF(loader, SliderMidModel)).scene
         .children[0] as SliderObject,
-      far: (await asyncLoadGTLF(loader, "models/slider_far.glb")).scene
+      far: (await asyncLoadGTLF(loader, SliderFarModel)).scene
         .children[0] as SliderObject,
     };
     const layerGLTF = layerGLTFComplete.scene.children[0];
