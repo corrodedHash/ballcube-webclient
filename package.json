@@ -9,7 +9,7 @@
   "dependencies": {
     "@types/three": "^0.140.0",
     "register-service-worker": "^1.7.2",
-    "three": "^0.140.0",
+    "three": "^0.140.2",
     "vue": "^3.2.13"
   },
   "devDependencies": {

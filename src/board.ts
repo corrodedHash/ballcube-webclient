@@ -1,13 +1,6 @@
-import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-import Layer, { SliderObject } from "./layer";
-
-import LayerModel from "@/assets/models/layer.glb";
-
-import SliderFullModel from "@/assets/models/slider_full.glb";
-import SliderFarModel from "@/assets/models/slider_far.glb";
-import SliderMidModel from "@/assets/models/slider_mid.glb";
-import SliderNearModel from "@/assets/models/slider_near.glb";
+import Layer from "./layer";
 
 import {
   Object3D,
@@ -18,21 +11,8 @@ import {
   Raycaster,
 } from "three";
 
-import BoardLogic, { BallDepth, GateID, LayerID } from "./gamelogic";
-
-const asyncLoadGTLF = async (
-  loader: GLTFLoader,
-  path: string
-): Promise<GLTF> => {
-  return new Promise((resolve, reject) => {
-    loader.load(
-      path,
-      (gltf) => resolve(gltf),
-      undefined,
-      (e) => reject(e)
-    );
-  });
-};
+import BoardLogic, { BallDepth, GateID, GateType, LayerID } from "./gamelogic";
+import { asyncLoadGTLF, loadLayer, loadSliderLibrary, Tuple } from "./util";
 
 interface BallObject {
   ob: Object3D;
@@ -41,22 +21,19 @@ interface BallObject {
 }
 
 export default class Board extends Object3D {
-  public l: Layer[];
-  private balls: BallObject[];
+  public l: Tuple<Layer, 4>;
+  private balls: Tuple<BallObject, 9>;
   private highlighted_slider: { layer: LayerID; gate: GateID } | undefined;
 
-  private constructor(layers: Layer[], balls: BallObject[]) {
+  private constructor(layers: Tuple<Layer, 4>, balls: Tuple<BallObject, 9>) {
     super();
     if (layers.length !== 4) throw new Error("wrong layer count");
     if (balls.length !== 9) throw new Error("wrong balls count");
     this.l = layers;
-    for (const l of layers) {
-      this.add(l);
-    }
     this.balls = balls;
-    for (const b of balls) {
-      this.add(b.ob);
-    }
+
+    this.add(...this.l);
+    this.add(...this.balls.map((v) => v.ob));
   }
 
   update(logic: BoardLogic) {
@@ -103,6 +80,7 @@ export default class Board extends Object3D {
     this.highlighted_slider = { layer, gate };
     this.l[layer].highlight_slider(gate);
   }
+
   unhighlight_sliders() {
     if (this.highlighted_slider !== undefined) {
       this.l[this.highlighted_slider.layer].unhighlight_slider();
@@ -111,49 +89,20 @@ export default class Board extends Object3D {
   }
 
   static async setup(logic: BoardLogic) {
-    const loader = new GLTFLoader();
+    const layerGLTF = await loadLayer();
 
-    const layerGLTFComplete = await asyncLoadGTLF(loader, LayerModel);
+    const sliderLibrary = await loadSliderLibrary();
+    console.dir(sliderLibrary[0])
+    const distance = -10;
 
-    const sliderLibrary = {
-      full: (await asyncLoadGTLF(loader, SliderFullModel)).scene
-        .children[0] as SliderObject,
-      near: (await asyncLoadGTLF(loader, SliderNearModel)).scene
-        .children[0] as SliderObject,
-      mid: (await asyncLoadGTLF(loader, SliderMidModel)).scene
-        .children[0] as SliderObject,
-      far: (await asyncLoadGTLF(loader, SliderFarModel)).scene
-        .children[0] as SliderObject,
-    };
-    const layerGLTF = layerGLTFComplete.scene.children[0];
-    const layers = [
-      new Layer(layerGLTF.clone(), sliderLibrary),
-      new Layer(layerGLTF.clone(), sliderLibrary),
-      new Layer(layerGLTF.clone(), sliderLibrary),
-      new Layer(layerGLTF.clone(), sliderLibrary),
-    ];
+    const layers = [...Array(4).keys()].map((v, i) => {
+      const l = new Layer(layerGLTF.clone(), sliderLibrary);
 
-    layers[0].name = "Layer0";
-    layers[1].name = "Layer1";
-    layers[2].name = "Layer2";
-    layers[3].name = "Layer3";
+      l.name = `Layer_${i}`;
+      l.position.setY(distance * i);
 
-    const layerOrthogonal = new Vector3(0, -1, 0);
-    const distance = 10;
-    layers[1].position.addVectors(
-      layers[1].position,
-      layerOrthogonal.clone().multiplyScalar(distance)
-    );
-
-    layers[2].position.addVectors(
-      layers[2].position,
-      layerOrthogonal.clone().multiplyScalar(distance * 2)
-    );
-
-    layers[3].position.addVectors(
-      layers[3].position,
-      layerOrthogonal.clone().multiplyScalar(distance * 3)
-    );
+      return l;
+    }) as Tuple<Layer, 4>;
 
     const balls: BallObject[] = [];
     for (let row = -1; row < 2; row++) {
@@ -173,7 +122,7 @@ export default class Board extends Object3D {
       }
     }
 
-    const b = new Board(layers, balls);
+    const b = new Board(layers, balls as Tuple<BallObject, 9>);
     b.update(logic);
     return b;
   }

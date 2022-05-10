@@ -5,9 +5,8 @@ import {
   MeshStandardMaterial,
   Object3D,
 } from "three";
-import { GateDepth, GateID, GateType, LayerInfo } from "./gamelogic";
-
-export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;
+import { GateDepth, GateID, GateType } from "@/gamelogic";
+import { SliderLibrary, SliderObject } from "@/util";
 
 interface SliderInfo {
   ob: SliderObject;
@@ -16,24 +15,19 @@ interface SliderInfo {
   ownedBySilver: boolean;
 }
 
-interface SliderLibrary {
-  full: SliderObject;
-  near: SliderObject;
-  mid: SliderObject;
-  far: SliderObject;
-}
-
 export default class Layer extends Object3D {
+  private sliderLibrary: SliderLibrary;
+
   private horizontal: boolean;
   private sliders: [SliderInfo, SliderInfo, SliderInfo];
-  private sliderLibrary: SliderLibrary;
+
   constructor(layer: Object3D, sliders: SliderLibrary) {
     super();
     this.sliderLibrary = sliders;
     const bla = [
-      sliders.full.clone(true),
-      sliders.full.clone(true),
-      sliders.full.clone(true),
+      sliders[GateType.None].clone(true),
+      sliders[GateType.None].clone(true),
+      sliders[GateType.None].clone(true),
     ];
     bla[0].name = "Slider0";
     bla[1].name = "Slider1";
@@ -122,13 +116,7 @@ export default class Layer extends Object3D {
   set_type(id: GateID, type: GateType) {
     this.remove(this.sliders[id].ob);
 
-    const a: Record<GateType, SliderObject> = {
-      [GateType.Furthest]: this.sliderLibrary.far,
-      [GateType.Mid]: this.sliderLibrary.mid,
-      [GateType.Near]: this.sliderLibrary.near,
-      [GateType.None]: this.sliderLibrary.full,
-    };
-    this.sliders[id].ob = a[type].clone(true);
+    this.sliders[id].ob = this.sliderLibrary[type].clone(true);
 
     this.sliders[id].ob.material = new MeshStandardMaterial({
       color: this.sliders[id].ownedBySilver ? 0xffffff : 0xffd700,

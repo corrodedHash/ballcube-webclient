@@ -4,17 +4,21 @@
 import {
   AmbientLight,
   DirectionalLight,
-  MeshStandardMaterial,
   OrthographicCamera,
   Raycaster,
   Scene,
   Vector3,
   WebGLRenderer,
 } from "three";
-import BoardLogic, { GateType } from "@/gamelogic";
+
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ref, watch } from "vue";
 import Board from "@/board";
+import BuilderBoard from "@/builder/board";
+import { generateTestBoardLogic } from "@/test";
+import GameLoop from "@/gameloop";
+import { loadLayer, loadSliderLibrary } from "@/util";
+import BuildLoop from "@/builder/buildloop";
 const hey = ref(null as null | HTMLDivElement);
 
 async function setup_render(element: HTMLDivElement) {
@@ -40,107 +44,37 @@ async function setup_render(element: HTMLDivElement) {
 
   renderer.render(scene, camera);
 
-  const logic = new BoardLogic(
-    [
-      {
-        horizontal: false,
-        gate: [
-          { depth: 0, silver: true, topleft: true, type: GateType.Furthest },
-          { depth: 0, silver: false, topleft: true, type: GateType.Mid },
-          { depth: 0, silver: true, topleft: false, type: GateType.Near },
-        ],
-      },
-      {
-        horizontal: true,
-        gate: [
-          { depth: 0, silver: false, topleft: false, type: GateType.None },
-          { depth: 0, silver: true, topleft: true, type: GateType.Furthest },
-          { depth: 0, silver: false, topleft: false, type: GateType.Mid },
-        ],
-      },
-      {
-        horizontal: false,
-        gate: [
-          { depth: 0, silver: true, topleft: true, type: GateType.Near },
-          { depth: 0, silver: true, topleft: false, type: GateType.None },
-          { depth: 0, silver: true, topleft: true, type: GateType.Furthest },
-        ],
-      },
-      {
-        horizontal: true,
-        gate: [
-          { depth: 0, silver: false, topleft: false, type: GateType.Mid },
-          { depth: 0, silver: false, topleft: false, type: GateType.Near },
-          { depth: 0, silver: false, topleft: true, type: GateType.None },
-        ],
-      },
-    ],
-    [
-      { depth: 0, silver: true },
-      { depth: 0, silver: false },
-      { depth: 0, silver: true },
-      { depth: 0, silver: true },
-      { depth: 0, silver: false },
-      { depth: 4, silver: true },
-      { depth: 0, silver: true },
-      { depth: 0, silver: false },
-      { depth: 0, silver: false },
-    ],
-    true
-  );
+  const logic = generateTestBoardLogic();
+  const gameboard = await Board.setup(logic);
+  gameboard.position.addVectors(gameboard.position, new Vector3(0, 12, 0));
+  gameboard.rotateX(Math.PI / 8);
 
-  const board = await Board.setup(logic);
+  const board = new BuilderBoard(await loadLayer(), await loadSliderLibrary());
   board.position.addVectors(board.position, new Vector3(0, 12, 0));
   board.rotateX(Math.PI / 8);
 
-  scene.add(board);
   renderer.render(scene, camera);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enablePan = false;
   camera.position.set(0, 20, 100);
   controls.update();
 
-  const raycaster = new Raycaster();
+  const gameLoop = new GameLoop(renderer.domElement, gameboard, logic, camera);
+  const buildLoop = new BuildLoop(renderer.domElement, camera, board);
 
-  renderer.domElement.addEventListener("mousemove", (ev) => {
-    const xRatio = (ev.offsetX / s) * 2 - 1;
-    const yRatio = -((ev.offsetY / s) * 2 - 1);
-    raycaster.setFromCamera({ x: xRatio, y: yRatio }, camera);
-  });
+  scene.add(board);
+  const loop = buildLoop;
 
-  renderer.domElement.addEventListener("mousedown", (ev) => {
-    if (ev.button !== 2) return;
-    const slider = board.raySlider(raycaster);
+  // scene.add(gameboard);
+  // const loop = gameLoop;
 
-    if (slider !== undefined) {
-      if (
-        logic.layers[slider.layer].gate[slider.gate].silver ===
-        logic.silverAtPlay
-      ) {
-        logic.shift(slider.layer, slider.gate);
-        logic.silverAtPlay = !logic.silverAtPlay;
-        board.update(logic);
-      }
-    }
-  });
+  loop.start();
 
   function animate(time: DOMHighResTimeStamp) {
     requestAnimationFrame(animate);
 
     controls.update();
-    const slider = board.raySlider(raycaster);
-
-    if (slider !== undefined) {
-      if (
-        logic.layers[slider.layer].gate[slider.gate].silver ===
-        logic.silverAtPlay
-      ) {
-        board.highlight_slider(slider.layer, slider.gate);
-      } else {
-      }
-    } else {
-      board.unhighlight_sliders();
-    }
+    loop.tick();
     renderer.render(scene, camera);
   }
   animate(0);
@@ -155,7 +89,7 @@ watch(hey, (v) => {
 <style scoped>
 .modelview {
   border: 0.2em solid lightblue;
-  display:flex;
+  display: flex;
   flex-direction: row;
   justify-content: center;
 }
