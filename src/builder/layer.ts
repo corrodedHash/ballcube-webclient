@@ -1,7 +1,7 @@
 import { BufferGeometry, Mesh, MeshStandardMaterial, Object3D } from "three";
 import { GateDepth, GateID, GateType } from "@/gamelogic";
 import { triangleMesh } from "./util";
-import { SliderLibrary, Tuple } from "@/util";
+import { positionSliderInLayer, SliderLibrary, Tuple } from "@/util";
 import SliderConfigurator from "./sliderConfig";
 
 export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;
@@ -11,6 +11,7 @@ interface SliderInfo {
   topleft: boolean;
   depth: GateDepth;
   ownedBySilver: boolean;
+  gatetype: GateType;
 }
 
 export interface PointerCoordinate {
@@ -79,6 +80,21 @@ export default class Layer extends Object3D {
     };
   }
 
+  show_pointers() {
+    this.pointers.map((v, index) => {
+      if (this.definedSliders[Math.floor(index / 4)] !== undefined) return;
+      if (this.horizontal !== undefined) {
+        const index_horizontal = index % 4 >= 2;
+        if (index_horizontal == this.horizontal) {
+          this.add(v);
+        }
+      } else this.add(v);
+    });
+  }
+  hide_pointers() {
+    this.pointers.map((v) => this.remove(v));
+  }
+
   highlight_pointer(pointer: PointerCoordinate) {
     let pointer_id =
       pointer.gate * 4 +
@@ -93,18 +109,55 @@ export default class Layer extends Object3D {
   }
 
   select_pointer(pointer: PointerCoordinate, availableTypes: GateType[]) {
+    if (this.currentSlider !== undefined)
+      throw new Error("Trying to create a second slider");
     this.currentSlider = new SliderConfigurator(
       availableTypes,
       this.sliderLibrary
     );
     this.add(this.currentSlider);
+    console.assert(
+      this.horizontal === undefined || this.horizontal === pointer.horizontal
+    );
 
-    if (!pointer.topleft) this.currentSlider.rotateY(Math.PI);
-    if (pointer.horizontal) {
-      this.currentSlider.rotateY(Math.PI / 2);
-      this.currentSlider.position.setZ((pointer.gate - 1) * 5);
-    } else {
-      this.currentSlider.position.setX((pointer.gate - 1) * 5);
-    }
+    this.horizontal = pointer.horizontal;
+
+    positionSliderInLayer(
+      this.currentSlider,
+      pointer.horizontal,
+      pointer.topleft,
+      pointer.gate,
+      0,
+      5
+    );
+
+    return this.currentSlider;
+  }
+
+  set_slider(
+    gate: GateID,
+    horizontal: boolean,
+    topleft: boolean,
+    gatetype: GateType
+  ) {
+    console.assert(
+      this.horizontal === undefined || this.horizontal === horizontal
+    );
+    console.assert(this.definedSliders[gate] === undefined);
+
+    const s = this.sliderLibrary[gatetype].clone();
+    positionSliderInLayer(s, horizontal, topleft, gate, 0, 5);
+    if (this.currentSlider !== undefined) this.remove(this.currentSlider);
+    this.currentSlider = undefined;
+
+    this.add(s);
+
+    this.definedSliders[gate] = {
+      ob: s,
+      depth: 0,
+      ownedBySilver: true,
+      topleft,
+      gatetype,
+    };
   }
 }

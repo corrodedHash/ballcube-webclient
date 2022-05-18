@@ -1,5 +1,5 @@
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { GateType } from "./gamelogic";
+import { GateDepth, GateID, GateType } from "./gamelogic";
 
 import LayerModel from "@/assets/models/layer.glb";
 
@@ -7,7 +7,7 @@ import SliderFullModel from "@/assets/models/slider_full.glb";
 import SliderFarModel from "@/assets/models/slider_far.glb";
 import SliderMidModel from "@/assets/models/slider_mid.glb";
 import SliderNearModel from "@/assets/models/slider_near.glb";
-import { BufferGeometry, Mesh, MeshStandardMaterial } from "three";
+import { BufferGeometry, Mesh, MeshStandardMaterial, Object3D } from "three";
 
 export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;
 export type SliderLibrary = Record<GateType, SliderObject>;
@@ -52,6 +52,26 @@ export async function asyncLoadGTLF(
       (e) => reject(e)
     );
   });
+}
+
+export function positionSliderInLayer(
+  slider: Object3D,
+  horizontal: boolean,
+  topleft: boolean,
+  gate: GateID,
+  depth: GateDepth,
+  cell_size: number
+) {
+  slider.rotation.set(0, 0, 0);
+  slider.position.set(0, 0, 0);
+
+  if (horizontal) slider.rotateY(Math.PI / 2);
+  if (!topleft) slider.rotateY(Math.PI);
+  const slot = (gate - 1) * cell_size;
+  const depth_pos = -depth * cell_size * (topleft ? 1 : -1);
+
+  if (horizontal) slider.position.set(depth_pos, 0, slot);
+  else slider.position.set(slot, 0, depth_pos);
 }
 
 export type Tuple<T, N extends number> = N extends N

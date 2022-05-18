@@ -6,7 +6,7 @@ import {
   Object3D,
 } from "three";
 import { GateDepth, GateID, GateType } from "@/gamelogic";
-import { SliderLibrary, SliderObject } from "@/util";
+import { positionSliderInLayer, SliderLibrary, SliderObject } from "@/util";
 
 interface SliderInfo {
   ob: SliderObject;
@@ -76,16 +76,14 @@ export default class Layer extends Object3D {
       s.ob.visible = s.depth <= 2;
       s.ob.material.color.setHex(s.ownedBySilver ? 0xffffff : 0xffd700);
 
-      s.ob.rotation.set(0, 0, 0);
-      s.ob.position.set(0, 0, 0);
-
-      if (this.horizontal) s.ob.rotateY(Math.PI / 2);
-      if (!s.topleft) s.ob.rotateY(Math.PI);
-      const slot = (parseInt(slider_id) - 1) * cell_size;
-      const depth = -s.depth * cell_size * (s.topleft ? 1 : -1);
-
-      if (this.horizontal) s.ob.position.set(depth, 0, slot);
-      else s.ob.position.set(slot, 0, depth);
+      positionSliderInLayer(
+        s.ob,
+        this.horizontal,
+        s.topleft,
+        parseInt(slider_id) as GateID,
+        s.depth,
+        cell_size
+      );
     }
   }
 

@@ -1,13 +1,19 @@
+import { LayerID } from "@/gamelogic";
 import Loop from "@/loop";
 import { SliderLibrary } from "@/util";
 import { Camera, Object3D, Raycaster } from "three";
 import BuildBoard from "./board";
+import { PointerCoordinate } from "./layer";
+import SliderConfigurator from "./sliderConfig";
 
 export default class BuildLoop implements Loop {
   private board: BuildBoard;
   private camera: Camera;
   private raycaster: Raycaster;
   private element: HTMLElement;
+  private sliderConfig:
+    | ({ slider: SliderConfigurator; layer: LayerID } & PointerCoordinate)
+    | undefined;
 
   private listeners: {
     move: (this: HTMLElement, ev: MouseEvent) => any;
@@ -33,9 +39,24 @@ export default class BuildLoop implements Loop {
       },
       down: (ev: MouseEvent) => {
         if (ev.button !== 2) return;
-        const pointer = this.board.rayPointer(this.raycaster);
-        if (pointer !== undefined) {
-          this.board.select_pointer(pointer, this.silverAtPlay);
+        if (this.sliderConfig === undefined) {
+          const pointer = this.board.rayPointer(this.raycaster);
+          if (pointer !== undefined) {
+            const sc = this.board.select_pointer(pointer, this.silverAtPlay);
+            this.sliderConfig = { ...pointer, slider: sc };
+          }
+        } else {
+          const gatetype = this.sliderConfig.slider.rayOption(this.raycaster);
+          if (gatetype !== undefined) {
+            this.board.set_slider(
+              this.sliderConfig.layer,
+              this.sliderConfig.gate,
+              this.sliderConfig.horizontal,
+              this.sliderConfig.topleft,
+              this.sliderConfig.slider.gateType
+            );
+            this.sliderConfig = undefined;
+          }
         }
       },
     };
@@ -52,12 +73,20 @@ export default class BuildLoop implements Loop {
   }
 
   tick() {
-    const pointer = this.board.rayPointer(this.raycaster);
-
-    if (pointer !== undefined) {
-      this.board.highlight_pointer(pointer.layer, pointer);
+    if (this.sliderConfig === undefined) {
+      const pointer = this.board.rayPointer(this.raycaster);
+      if (pointer !== undefined) {
+        this.board.highlight_pointer(pointer.layer, pointer);
+      } else {
+        this.board.unhighlight_pointer();
+      }
     } else {
-      this.board.unhighlight_pointer();
+      const gatetype = this.sliderConfig.slider.rayOption(this.raycaster);
+      if (gatetype !== undefined) {
+        this.sliderConfig.slider.highlight(gatetype);
+      } else {
+        this.sliderConfig.slider.unhighlight();
+      }
     }
   }
 }

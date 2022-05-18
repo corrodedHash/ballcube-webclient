@@ -92,7 +92,7 @@ export default class Board extends Object3D {
     const layerGLTF = await loadLayer();
 
     const sliderLibrary = await loadSliderLibrary();
-    console.dir(sliderLibrary[0])
+
     const distance = -10;
 
     const layers = [...Array(4).keys()].map((v, i) => {

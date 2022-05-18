@@ -9,7 +9,7 @@ import {
   Vector3,
 } from "three";
 
-import { BallDepth, GateType, LayerID } from "@/gamelogic";
+import { BallDepth, GateID, GateType, LayerID } from "@/gamelogic";
 import { SliderLibrary, Tuple } from "@/util";
 
 interface BallObject {
@@ -92,7 +92,7 @@ export default class Board extends Object3D {
 
     if (o === undefined) return undefined;
 
-    for (const l of [0, 1, 2, 3] as LayerID[]) {
+    for (const l of [0, 1, 2, 3] as Array<LayerID>) {
       const pointer = this.l[l].hasPointer(o.object);
       if (pointer !== undefined) return { ...pointer, layer: l };
     }
@@ -118,10 +118,25 @@ export default class Board extends Object3D {
     let gate_types = silver
       ? this.leftoverTypes.silver
       : this.leftoverTypes.gold;
+
     let allowedGates = Object.entries(gate_types)
       .filter(([k, v]) => v !== 0)
       .map(([k, v]) => parseInt(k) as GateType);
-    console.log(allowedGates)
-    this.l[pointer.layer].select_pointer(pointer, allowedGates);
+
+    this.l.map((v) => v.hide_pointers());
+
+    return this.l[pointer.layer].select_pointer(pointer, allowedGates);
+  }
+
+  set_slider(
+    layer: LayerID,
+    gate: GateID,
+    horizontal: boolean,
+    topleft: boolean,
+    gatetype: GateType
+  ) {
+    this.l[layer].set_slider(gate, horizontal, topleft, gatetype);
+    this.unhighlight_pointer();
+    this.l.map((v) => v.show_pointers());
   }
 }
