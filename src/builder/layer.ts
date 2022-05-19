@@ -1,6 +1,11 @@
-import { BufferGeometry, Mesh, MeshStandardMaterial, Object3D } from "three";
-import { GateDepth, GateID, GateInfo, GateType, LayerInfo } from "@/gamelogic";
-import { triangleMesh } from "./util";
+import {
+  ExtrudeGeometry,
+  Mesh,
+  MeshStandardMaterial,
+  Object3D,
+  Shape,
+} from "three";
+import { GateID, GateInfo, GateType, LayerInfo } from "@/boardTypes";
 import {
   positionSliderInLayer,
   SliderLibrary,
@@ -9,18 +14,37 @@ import {
 } from "@/util";
 import SliderConfigurator from "./sliderConfig";
 
-interface SliderInfo {
+interface SliderInfo extends GateInfo {
   ob: SliderObject;
-  topleft: boolean;
-  depth: GateDepth;
-  ownedBySilver: boolean;
-  gatetype: GateType;
 }
 
 export interface PointerCoordinate {
   gate: GateID;
   horizontal: boolean;
   topleft: boolean;
+}
+
+function triangleMesh() {
+  const trianglePlane = new Shape();
+  trianglePlane.moveTo(0, 0);
+  trianglePlane.lineTo(1, -1);
+  trianglePlane.lineTo(0, 2);
+  trianglePlane.lineTo(-1, -1);
+  trianglePlane.lineTo(0, 0);
+
+  const extrudeSettings = {
+    steps: 2,
+    depth: 0,
+    bevelEnabled: true,
+    bevelThickness: 0.1,
+    bevelSize: 0.4,
+    bevelOffset: 0,
+    bevelSegments: 1,
+  };
+
+  const geometry = new ExtrudeGeometry(trianglePlane, extrudeSettings);
+  geometry.rotateX(Math.PI / 2);
+  return geometry;
 }
 
 export default class Layer extends Object3D {
@@ -168,9 +192,9 @@ export default class Layer extends Object3D {
     this.definedSliders[gate] = {
       ob: s,
       depth: 0,
-      ownedBySilver: ownerSilver,
+      silver: ownerSilver,
       topleft,
-      gatetype,
+      type: gatetype,
     };
   }
 
@@ -183,9 +207,9 @@ export default class Layer extends Object3D {
         if (v === undefined) throw new Error("Gate is still undefined");
         return {
           depth: v.depth,
-          silver: v.ownedBySilver,
+          silver: v.silver,
           topleft: v.topleft,
-          type: v.gatetype,
+          type: v.type,
         } as GateInfo;
       }) as any,
     };

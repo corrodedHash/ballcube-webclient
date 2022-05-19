@@ -1,12 +1,11 @@
+import { MeshBasicMaterial, MeshStandardMaterial, Object3D } from "three";
+import { GateDepth, GateID, GateType } from "@/boardTypes";
 import {
-  BufferGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  Object3D,
-} from "three";
-import { GateDepth, GateID, GateType } from "@/gamelogic";
-import { positionSliderInLayer, SliderLibrary, SliderObject } from "@/util";
+  positionSliderInLayer,
+  SliderLibrary,
+  SliderObject,
+  Tuple,
+} from "@/util";
 
 interface SliderInfo {
   ob: SliderObject;
@@ -19,7 +18,7 @@ export default class Layer extends Object3D {
   private sliderLibrary: SliderLibrary;
 
   private horizontal: boolean;
-  private sliders: [SliderInfo, SliderInfo, SliderInfo];
+  private sliders: Tuple<SliderInfo, 3>;
 
   constructor(layer: Object3D, sliders: SliderLibrary) {
     super();
@@ -42,9 +41,7 @@ export default class Layer extends Object3D {
       opacity: 0.8,
     });
     this.add(layer);
-    this.add(bla[0]);
-    this.add(bla[1]);
-    this.add(bla[2]);
+    this.add(...bla);
     this.horizontal = false;
 
     this.update();

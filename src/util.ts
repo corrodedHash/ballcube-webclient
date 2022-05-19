@@ -1,5 +1,5 @@
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { GateDepth, GateID, GateType } from "./gamelogic";
+import { GateDepth, GateID, GateType } from "@/boardTypes";
 
 import LayerModel from "@/assets/models/layer.glb";
 
@@ -7,6 +7,7 @@ import SliderFullModel from "@/assets/models/slider_full.glb";
 import SliderFarModel from "@/assets/models/slider_far.glb";
 import SliderMidModel from "@/assets/models/slider_mid.glb";
 import SliderNearModel from "@/assets/models/slider_near.glb";
+
 import { BufferGeometry, Mesh, MeshStandardMaterial, Object3D } from "three";
 
 export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;

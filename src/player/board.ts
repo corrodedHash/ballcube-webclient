@@ -1,5 +1,3 @@
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-
 import Layer from "./layer";
 
 import {
@@ -11,8 +9,9 @@ import {
   Raycaster,
 } from "three";
 
-import BoardLogic, { BallDepth, GateID, GateType, LayerID } from "./gamelogic";
-import { asyncLoadGTLF, loadLayer, loadSliderLibrary, SliderLibrary, Tuple } from "./util";
+import BoardLogic from "../gamelogic";
+import { BallDepth, GateID, LayerID } from "@/boardTypes";
+import { SliderLibrary, Tuple } from "../util";
 
 interface BallObject {
   ob: Object3D;

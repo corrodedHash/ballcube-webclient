@@ -1,6 +1,6 @@
-import BoardLogic, { BallID, GateType, LayerID } from "@/gamelogic";
+import BoardLogic from "@/gamelogic";
+import { LayerID } from "@/boardTypes";
 import Loop from "@/loop";
-import { generateTestBoardLogic } from "@/test";
 import { Camera, Raycaster } from "three";
 import BuildBoard from "./board";
 import { PointerCoordinate } from "./layer";
@@ -58,8 +58,8 @@ export default class BuildLoop implements Loop {
           if (gatetype !== undefined) {
             const sliders_finished = this.board.set_slider(
               this.sliderConfig.layer,
-              this.sliderConfig.gate,
               this.sliderConfig.horizontal,
+              this.sliderConfig.gate,
               this.sliderConfig.topleft,
               this.sliderConfig.slider.gateType,
               this.silverAtPlay

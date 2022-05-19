@@ -1,4 +1,4 @@
-import { GateType } from "@/gamelogic";
+import { GateType } from "@/boardTypes";
 import {
   CylinderGeometry,
   Mesh,

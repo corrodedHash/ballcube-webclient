@@ -1,4 +1,5 @@
-import BoardLogic, { GateType } from "./gamelogic";
+import BoardLogic from "@/gamelogic";
+import { GateType } from "@/boardTypes";
 
 export function generateTestBoardLogic() {
   return new BoardLogic(

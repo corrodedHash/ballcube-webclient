@@ -1,7 +1,7 @@
 import { Camera, Raycaster } from "three";
 import Board from "./board";
-import BoardLogic from "./gamelogic";
-import Loop from "./loop";
+import BoardLogic from "@/gamelogic";
+import Loop from "@/loop";
 
 export default class GameLoop implements Loop {
   private raycaster: Raycaster;
@@ -40,10 +40,11 @@ export default class GameLoop implements Loop {
         const slider = this.board.raySlider(this.raycaster);
 
         if (slider !== undefined) {
-          if (
+          const sliderBelongsToCurrentPlayer =
             this.logic.layers[slider.layer].gate[slider.gate].silver ===
-            this.logic.silverAtPlay
-          ) {
+            this.logic.silverAtPlay;
+
+          if (sliderBelongsToCurrentPlayer) {
             this.logic.shift(slider.layer, slider.gate);
             this.logic.silverAtPlay = !this.logic.silverAtPlay;
             this.board.update(this.logic);
@@ -57,12 +58,12 @@ export default class GameLoop implements Loop {
     const slider = this.board.raySlider(this.raycaster);
 
     if (slider !== undefined) {
-      if (
+      const sliderBelongsToCurrentPlayer =
         this.logic.layers[slider.layer].gate[slider.gate].silver ===
-        this.logic.silverAtPlay
-      ) {
+        this.logic.silverAtPlay;
+
+      if (sliderBelongsToCurrentPlayer) {
         this.board.highlight_slider(slider.layer, slider.gate);
-      } else {
       }
     } else {
       this.board.unhighlight_sliders();
@@ -73,6 +74,7 @@ export default class GameLoop implements Loop {
     this.element.addEventListener("mousemove", this.listeners["move"]);
     this.element.addEventListener("mousedown", this.listeners["down"]);
   }
+
   stop() {
     this.element.removeEventListener("mousemove", this.listeners["move"]);
     this.element.removeEventListener("mousedown", this.listeners["down"]);

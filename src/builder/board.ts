@@ -8,14 +8,9 @@ import {
   SphereGeometry,
   Vector3,
 } from "three";
+import BoardLogic from "@/gamelogic";
 
-import BoardLogic, {
-  BallDepth,
-  BallID,
-  GateID,
-  GateType,
-  LayerID,
-} from "@/gamelogic";
+import { BallID, GateID, GateType, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "@/util";
 
 interface BallObject {
@@ -40,19 +35,16 @@ export default class Board extends Object3D {
 
     const distance = -10;
 
+    const defaultGateCounts = {
+      [GateType.Furthest]: 1,
+      [GateType.Mid]: 1,
+      [GateType.Near]: 2,
+      [GateType.None]: 2,
+    };
+
     this.leftoverTypes = {
-      silver: {
-        [GateType.Furthest]: 1,
-        [GateType.Mid]: 1,
-        [GateType.Near]: 2,
-        [GateType.None]: 2,
-      },
-      gold: {
-        [GateType.Furthest]: 1,
-        [GateType.Mid]: 1,
-        [GateType.Near]: 2,
-        [GateType.None]: 2,
-      },
+      silver: { ...defaultGateCounts },
+      gold: { ...defaultGateCounts },
     };
 
     const layers = [...Array(4).keys()].map((v, i) => {
@@ -175,8 +167,8 @@ export default class Board extends Object3D {
 
   set_slider(
     layer: LayerID,
-    gate: GateID,
     horizontal: boolean,
+    gate: GateID,
     topleft: boolean,
     gatetype: GateType,
     ownerSilver: boolean
