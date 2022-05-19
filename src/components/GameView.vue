@@ -5,7 +5,6 @@ import {
   AmbientLight,
   DirectionalLight,
   OrthographicCamera,
-  Raycaster,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -34,7 +33,7 @@ async function setup_render(element: HTMLDivElement) {
 
   const scene = new Scene();
 
-  var light = new AmbientLight(0x404040, 0.6);
+  var light = new AmbientLight(0x404040, 1);
   scene.add(light);
 
   var spotlight_left = new DirectionalLight(0xffffff, 0.7);
@@ -43,38 +42,51 @@ async function setup_render(element: HTMLDivElement) {
   scene.add(spotlight_left);
 
   renderer.render(scene, camera);
-
-  const logic = generateTestBoardLogic();
-  const gameboard = await Board.setup(logic);
-  gameboard.position.addVectors(gameboard.position, new Vector3(0, 12, 0));
-  gameboard.rotateX(Math.PI / 8);
-
-  const board = new BuilderBoard(await loadLayer(), await loadSliderLibrary());
-  board.position.addVectors(board.position, new Vector3(0, 12, 0));
-  board.rotateX(Math.PI / 8);
+  const layerModel = await loadLayer();
+  const sliderLibrary = await loadSliderLibrary();
+  const buildboard = new BuilderBoard(layerModel, sliderLibrary);
+  buildboard.position.addVectors(buildboard.position, new Vector3(0, 12, 0));
+  buildboard.rotateX(Math.PI / 8);
 
   renderer.render(scene, camera);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enablePan = false;
   camera.position.set(0, 20, 100);
   controls.update();
+  const usedLoop = { value: undefined as GameLoop | BuildLoop | undefined };
+  const buildLoop = new BuildLoop(
+    renderer.domElement,
+    camera,
+    buildboard,
+    (logic) => {
+      const gameboard = new Board(logic, layerModel, sliderLibrary);
+      gameboard.position.addVectors(gameboard.position, new Vector3(0, 12, 0));
+      gameboard.rotateX(Math.PI / 8);
+      usedLoop.value?.stop();
 
-  const gameLoop = new GameLoop(renderer.domElement, gameboard, logic, camera);
-  const buildLoop = new BuildLoop(renderer.domElement, camera, board);
+      usedLoop.value = new GameLoop(
+        renderer.domElement,
+        gameboard,
+        logic,
+        camera
+      );
+      usedLoop.value.start();
+      scene.remove(buildboard);
+      scene.add(gameboard);
+    }
+  );
 
-  scene.add(board);
-  const loop = buildLoop;
+  usedLoop.value = buildLoop;
 
-  // scene.add(gameboard);
-  // const loop = gameLoop;
+  scene.add(buildboard);
 
-  loop.start();
+  usedLoop.value?.start();
 
   function animate(time: DOMHighResTimeStamp) {
     requestAnimationFrame(animate);
 
     controls.update();
-    loop.tick();
+    usedLoop.value?.tick();
     renderer.render(scene, camera);
   }
   animate(0);

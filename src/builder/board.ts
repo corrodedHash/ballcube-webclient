@@ -9,13 +9,19 @@ import {
   Vector3,
 } from "three";
 
-import { BallDepth, GateID, GateType, LayerID } from "@/gamelogic";
+import BoardLogic, {
+  BallDepth,
+  BallID,
+  GateID,
+  GateType,
+  LayerID,
+} from "@/gamelogic";
 import { SliderLibrary, Tuple } from "@/util";
 
 interface BallObject {
-  depth: BallDepth;
   ob: Object3D;
   silver: boolean;
+  placed: boolean;
 }
 
 export default class Board extends Object3D {
@@ -58,31 +64,70 @@ export default class Board extends Object3D {
       return l;
     }) as Tuple<Layer, 4>;
 
-    const balls = [];
+    const balls = [] as Array<BallObject>;
 
     for (let row = -1; row < 2; row++) {
       for (let column = -1; column < 2; column++) {
         const s = new Mesh(
           new SphereGeometry(1, 60, 40),
           new MeshStandardMaterial({
-            color: true ? 0xdbdbdc : 0xffd700,
-            roughness: 0.5,
-            metalness: 0.3,
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.5,
+            emissive: 0x0000ff,
+            emissiveIntensity: 0,
           })
         );
         s.name = `Ball_${column + 1}_${row + 1}`;
         s.position.addVectors(s.position, new Vector3(column * 5, 0, row * 5));
-        s.visible = false;
-        balls.push({ depth: 0, ob: s, silver: true });
+        balls.push({ ob: s, silver: true, placed: false });
       }
     }
 
     this.l = layers;
 
     this.add(...layers);
-    this.add(...balls.map((v) => v.ob));
 
     this.balls = balls as unknown as Tuple<BallObject, 9>;
+  }
+
+  rayPhantomBall(raycaster: Raycaster) {
+    const o = raycaster.intersectObject(this, true)[0];
+
+    if (o === undefined) return undefined;
+
+    for (const ballID in this.balls) {
+      if (this.balls[ballID].ob !== o.object) continue;
+      if (this.balls[ballID].placed) return undefined;
+      return parseInt(ballID) as BallID;
+    }
+    return undefined;
+  }
+
+  enterBallSelectionMode() {
+    this.add(...this.balls.map((v) => v.ob));
+    this.l.map((v) => v.hide_pointers());
+  }
+
+  highlight_ball(ball: BallID) {
+    console.assert(this.balls[ball].placed === false);
+    (this.balls[ball].ob as any).material.emissiveIntensity = 1;
+  }
+
+  unhighlight_balls() {
+    this.balls.forEach((v) => ((v.ob as any).material.emissiveIntensity = 0));
+  }
+
+  select_ball(ball: BallID, silver: boolean) {
+    this.balls[ball].silver = silver;
+    this.balls[ball].placed = true;
+    (this.balls[ball].ob as any).material = new MeshStandardMaterial({
+      color: silver ? 0xdbdbdc : 0xffd700,
+      roughness: 0.5,
+      metalness: 0.3,
+    });
+
+    return this.balls.filter((v) => v.placed).length === 8;
   }
 
   rayPointer(
@@ -115,7 +160,7 @@ export default class Board extends Object3D {
     pointer: PointerCoordinate & { layer: LayerID },
     silver: boolean
   ) {
-    let gate_types = silver
+    const gate_types = silver
       ? this.leftoverTypes.silver
       : this.leftoverTypes.gold;
 
@@ -125,7 +170,7 @@ export default class Board extends Object3D {
 
     this.l.map((v) => v.hide_pointers());
 
-    return this.l[pointer.layer].select_pointer(pointer, allowedGates);
+    return this.l[pointer.layer].select_pointer(pointer, allowedGates, silver);
   }
 
   set_slider(
@@ -133,10 +178,32 @@ export default class Board extends Object3D {
     gate: GateID,
     horizontal: boolean,
     topleft: boolean,
-    gatetype: GateType
+    gatetype: GateType,
+    ownerSilver: boolean
   ) {
-    this.l[layer].set_slider(gate, horizontal, topleft, gatetype);
+    const gate_types = ownerSilver
+      ? this.leftoverTypes.silver
+      : this.leftoverTypes.gold;
+
+    console.assert(gate_types[gatetype] > 0);
+    gate_types[gatetype] -= 1;
+
+    this.l[layer].set_slider(gate, horizontal, topleft, gatetype, ownerSilver);
     this.unhighlight_pointer();
     this.l.map((v) => v.show_pointers());
+
+    return Object.values(this.leftoverTypes).every((v) =>
+      Object.values(v).every((v) => v === 0)
+    );
+  }
+
+  generateLogic(startingPlayerSilver: boolean) {
+    return new BoardLogic(
+      this.l.map((v) => v.generateLogic()) as any,
+      this.balls.map((v) => {
+        return { depth: v.placed ? 0 : 4, silver: v.silver };
+      }) as any,
+      startingPlayerSilver
+    );
   }
 }

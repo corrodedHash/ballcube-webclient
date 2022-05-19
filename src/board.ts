@@ -12,7 +12,7 @@ import {
 } from "three";
 
 import BoardLogic, { BallDepth, GateID, GateType, LayerID } from "./gamelogic";
-import { asyncLoadGTLF, loadLayer, loadSliderLibrary, Tuple } from "./util";
+import { asyncLoadGTLF, loadLayer, loadSliderLibrary, SliderLibrary, Tuple } from "./util";
 
 interface BallObject {
   ob: Object3D;
@@ -25,15 +25,47 @@ export default class Board extends Object3D {
   private balls: Tuple<BallObject, 9>;
   private highlighted_slider: { layer: LayerID; gate: GateID } | undefined;
 
-  private constructor(layers: Tuple<Layer, 4>, balls: Tuple<BallObject, 9>) {
+  constructor(
+    logic: BoardLogic,
+    layerGLTF: Object3D,
+    sliderLibrary: SliderLibrary
+  ) {
     super();
-    if (layers.length !== 4) throw new Error("wrong layer count");
-    if (balls.length !== 9) throw new Error("wrong balls count");
+    const distance = -10;
+
+    const layers = [...Array(4).keys()].map((v, i) => {
+      const l = new Layer(layerGLTF.clone(), sliderLibrary);
+
+      l.name = `Layer_${i}`;
+      l.position.setY(distance * i);
+
+      return l;
+    }) as Tuple<Layer, 4>;
+
+    const balls: BallObject[] = [];
+    for (let row = -1; row < 2; row++) {
+      for (let column = -1; column < 2; column++) {
+        const b = logic.balls[column + 1 + 3 * (row + 1)];
+        const s = new Mesh(
+          new SphereGeometry(1, 60, 40),
+          new MeshStandardMaterial({
+            color: b.silver ? 0xdbdbdc : 0xffd700,
+            roughness: 0.5,
+            metalness: 0.3,
+          })
+        );
+        s.name = `Ball_${column + 1}_${row + 1}`;
+        s.position.addVectors(s.position, new Vector3(column * 5, 0, row * 5));
+        balls.push({ depth: b.depth, ob: s, silver: b.silver });
+      }
+    }
     this.l = layers;
-    this.balls = balls;
+
+    this.balls = balls as any;
 
     this.add(...this.l);
     this.add(...this.balls.map((v) => v.ob));
+    this.update(logic);
   }
 
   update(logic: BoardLogic) {
@@ -86,44 +118,5 @@ export default class Board extends Object3D {
       this.l[this.highlighted_slider.layer].unhighlight_slider();
     }
     this.highlighted_slider = undefined;
-  }
-
-  static async setup(logic: BoardLogic) {
-    const layerGLTF = await loadLayer();
-
-    const sliderLibrary = await loadSliderLibrary();
-
-    const distance = -10;
-
-    const layers = [...Array(4).keys()].map((v, i) => {
-      const l = new Layer(layerGLTF.clone(), sliderLibrary);
-
-      l.name = `Layer_${i}`;
-      l.position.setY(distance * i);
-
-      return l;
-    }) as Tuple<Layer, 4>;
-
-    const balls: BallObject[] = [];
-    for (let row = -1; row < 2; row++) {
-      for (let column = -1; column < 2; column++) {
-        const b = logic.balls[column + 1 + 3 * (row + 1)];
-        const s = new Mesh(
-          new SphereGeometry(1, 60, 40),
-          new MeshStandardMaterial({
-            color: b.silver ? 0xdbdbdc : 0xffd700,
-            roughness: 0.5,
-            metalness: 0.3,
-          })
-        );
-        s.name = `Ball_${column + 1}_${row + 1}`;
-        s.position.addVectors(s.position, new Vector3(column * 5, 0, row * 5));
-        balls.push({ depth: b.depth, ob: s, silver: b.silver });
-      }
-    }
-
-    const b = new Board(layers, balls as Tuple<BallObject, 9>);
-    b.update(logic);
-    return b;
   }
 }

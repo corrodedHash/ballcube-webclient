@@ -1,10 +1,13 @@
 import { BufferGeometry, Mesh, MeshStandardMaterial, Object3D } from "three";
-import { GateDepth, GateID, GateType } from "@/gamelogic";
+import { GateDepth, GateID, GateInfo, GateType, LayerInfo } from "@/gamelogic";
 import { triangleMesh } from "./util";
-import { positionSliderInLayer, SliderLibrary, Tuple } from "@/util";
+import {
+  positionSliderInLayer,
+  SliderLibrary,
+  SliderObject,
+  Tuple,
+} from "@/util";
 import SliderConfigurator from "./sliderConfig";
-
-export type SliderObject = Mesh<BufferGeometry, MeshStandardMaterial>;
 
 interface SliderInfo {
   ob: SliderObject;
@@ -108,10 +111,16 @@ export default class Layer extends Object3D {
     this.pointers.forEach((v) => ((v as any).material.emissive.b = 0));
   }
 
-  select_pointer(pointer: PointerCoordinate, availableTypes: GateType[]) {
+  select_pointer(
+    pointer: PointerCoordinate,
+    availableTypes: GateType[],
+    silver: boolean
+  ) {
     if (this.currentSlider !== undefined)
       throw new Error("Trying to create a second slider");
+
     this.currentSlider = new SliderConfigurator(
+      silver,
       availableTypes,
       this.sliderLibrary
     );
@@ -138,15 +147,19 @@ export default class Layer extends Object3D {
     gate: GateID,
     horizontal: boolean,
     topleft: boolean,
-    gatetype: GateType
+    gatetype: GateType,
+    ownerSilver: boolean
   ) {
     console.assert(
       this.horizontal === undefined || this.horizontal === horizontal
     );
     console.assert(this.definedSliders[gate] === undefined);
 
-    const s = this.sliderLibrary[gatetype].clone();
+    const s = this.sliderLibrary[gatetype].clone(true);
     positionSliderInLayer(s, horizontal, topleft, gate, 0, 5);
+    s.material = new MeshStandardMaterial({
+      color: ownerSilver ? 0xffffff : 0xffd700,
+    });
     if (this.currentSlider !== undefined) this.remove(this.currentSlider);
     this.currentSlider = undefined;
 
@@ -155,9 +168,26 @@ export default class Layer extends Object3D {
     this.definedSliders[gate] = {
       ob: s,
       depth: 0,
-      ownedBySilver: true,
+      ownedBySilver: ownerSilver,
       topleft,
       gatetype,
+    };
+  }
+
+  generateLogic(): LayerInfo {
+    if (this.horizontal === undefined)
+      throw new Error("Horizontal in layer still undefined");
+    return {
+      horizontal: this.horizontal,
+      gate: this.definedSliders.map((v) => {
+        if (v === undefined) throw new Error("Gate is still undefined");
+        return {
+          depth: v.depth,
+          silver: v.ownedBySilver,
+          topleft: v.topleft,
+          type: v.gatetype,
+        } as GateInfo;
+      }) as any,
     };
   }
 }

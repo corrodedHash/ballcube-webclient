@@ -1,7 +1,7 @@
-import { LayerID } from "@/gamelogic";
+import BoardLogic, { BallID, GateType, LayerID } from "@/gamelogic";
 import Loop from "@/loop";
-import { SliderLibrary } from "@/util";
-import { Camera, Object3D, Raycaster } from "three";
+import { generateTestBoardLogic } from "@/test";
+import { Camera, Raycaster } from "three";
 import BuildBoard from "./board";
 import { PointerCoordinate } from "./layer";
 import SliderConfigurator from "./sliderConfig";
@@ -14,6 +14,9 @@ export default class BuildLoop implements Loop {
   private sliderConfig:
     | ({ slider: SliderConfigurator; layer: LayerID } & PointerCoordinate)
     | undefined;
+  private ballPlacement: boolean = false;
+
+  private finishCallback: (logic: BoardLogic) => void;
 
   private listeners: {
     move: (this: HTMLElement, ev: MouseEvent) => any;
@@ -22,7 +25,13 @@ export default class BuildLoop implements Loop {
 
   private silverAtPlay: boolean;
 
-  constructor(element: HTMLElement, camera: Camera, board: BuildBoard) {
+  constructor(
+    element: HTMLElement,
+    camera: Camera,
+    board: BuildBoard,
+    finishCallback: (logic: BoardLogic) => void
+  ) {
+    this.finishCallback = finishCallback;
     this.element = element;
     this.camera = camera;
     this.raycaster = new Raycaster();
@@ -39,23 +48,46 @@ export default class BuildLoop implements Loop {
       },
       down: (ev: MouseEvent) => {
         if (ev.button !== 2) return;
-        if (this.sliderConfig === undefined) {
-          const pointer = this.board.rayPointer(this.raycaster);
-          if (pointer !== undefined) {
-            const sc = this.board.select_pointer(pointer, this.silverAtPlay);
-            this.sliderConfig = { ...pointer, slider: sc };
-          }
-        } else {
+
+        const xRatio = (ev.offsetX / element.clientWidth) * 2 - 1;
+        const yRatio = -((ev.offsetY / element.clientHeight) * 2 - 1);
+        this.raycaster.setFromCamera({ x: xRatio, y: yRatio }, this.camera);
+
+        if (this.sliderConfig !== undefined) {
           const gatetype = this.sliderConfig.slider.rayOption(this.raycaster);
           if (gatetype !== undefined) {
-            this.board.set_slider(
+            const sliders_finished = this.board.set_slider(
               this.sliderConfig.layer,
               this.sliderConfig.gate,
               this.sliderConfig.horizontal,
               this.sliderConfig.topleft,
-              this.sliderConfig.slider.gateType
+              this.sliderConfig.slider.gateType,
+              this.silverAtPlay
             );
             this.sliderConfig = undefined;
+            this.silverAtPlay = !this.silverAtPlay;
+            if (sliders_finished) {
+              this.ballPlacement = true;
+              this.board.enterBallSelectionMode();
+            }
+          }
+        } else if (this.ballPlacement) {
+          const ball = this.board.rayPhantomBall(this.raycaster);
+          if (ball !== undefined) {
+            const balls_finished = this.board.select_ball(
+              ball,
+              this.silverAtPlay
+            );
+            this.silverAtPlay = !this.silverAtPlay;
+            if (balls_finished) {
+              finishCallback(this.board.generateLogic(this.silverAtPlay));
+            }
+          }
+        } else {
+          const pointer = this.board.rayPointer(this.raycaster);
+          if (pointer !== undefined) {
+            const sc = this.board.select_pointer(pointer, this.silverAtPlay);
+            this.sliderConfig = { ...pointer, slider: sc };
           }
         }
       },
@@ -73,19 +105,26 @@ export default class BuildLoop implements Loop {
   }
 
   tick() {
-    if (this.sliderConfig === undefined) {
-      const pointer = this.board.rayPointer(this.raycaster);
-      if (pointer !== undefined) {
-        this.board.highlight_pointer(pointer.layer, pointer);
-      } else {
-        this.board.unhighlight_pointer();
-      }
-    } else {
+    if (this.sliderConfig !== undefined) {
       const gatetype = this.sliderConfig.slider.rayOption(this.raycaster);
       if (gatetype !== undefined) {
         this.sliderConfig.slider.highlight(gatetype);
       } else {
         this.sliderConfig.slider.unhighlight();
+      }
+    } else if (this.ballPlacement) {
+      const ball = this.board.rayPhantomBall(this.raycaster);
+      if (ball !== undefined) {
+        this.board.highlight_ball(ball);
+      } else {
+        this.board.unhighlight_balls();
+      }
+    } else {
+      const pointer = this.board.rayPointer(this.raycaster);
+      if (pointer !== undefined) {
+        this.board.highlight_pointer(pointer.layer, pointer);
+      } else {
+        this.board.unhighlight_pointer();
       }
     }
   }

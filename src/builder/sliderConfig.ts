@@ -6,12 +6,13 @@ import {
   Object3D,
   Raycaster,
 } from "three";
-import { SliderLibrary, Tuple } from "@/util";
+import { SliderLibrary, SliderObject, Tuple } from "@/util";
 
 export default class SliderConfigurator extends Object3D {
   private sliderLibrary: SliderLibrary;
 
-  sliderOb: Object3D;
+  sliderOb: SliderObject;
+  silver: boolean;
   gateType: GateType;
   optionPegs: Tuple<
     Mesh<CylinderGeometry, MeshStandardMaterial> | undefined,
@@ -19,8 +20,13 @@ export default class SliderConfigurator extends Object3D {
   >;
   availableTypes: GateType[];
 
-  constructor(availableTypes: GateType[], sliderLibrary: SliderLibrary) {
+  constructor(
+    silver: boolean,
+    availableTypes: GateType[],
+    sliderLibrary: SliderLibrary
+  ) {
     super();
+    this.silver = silver;
 
     this.gateType = availableTypes[0];
     this.availableTypes = availableTypes;
@@ -57,6 +63,9 @@ export default class SliderConfigurator extends Object3D {
     this.optionPegs = optionPegs;
 
     this.sliderOb = this.sliderLibrary[this.gateType].clone(true);
+    this.sliderOb.material = new MeshStandardMaterial({
+      color: this.silver ? 0xffffff : 0xffd700,
+    });
 
     this.add(this.sliderOb);
   }
@@ -76,7 +85,10 @@ export default class SliderConfigurator extends Object3D {
 
     if (this.gateType !== gatetype) {
       this.remove(this.sliderOb);
-      this.sliderOb = this.sliderLibrary[gatetype].clone();
+      this.sliderOb = this.sliderLibrary[gatetype].clone(true);
+      this.sliderOb.material = new MeshStandardMaterial({
+        color: this.silver ? 0xffffff : 0xffd700,
+      });
       this.add(this.sliderOb);
       this.gateType = gatetype;
     }
@@ -89,13 +101,5 @@ export default class SliderConfigurator extends Object3D {
     this.optionPegs.forEach((v) => {
       if (v !== undefined) v.material.emissiveIntensity = 0;
     });
-  }
-
-  update() {
-    this.remove(this.sliderOb);
-
-    this.sliderOb = this.sliderLibrary[this.gateType].clone(true);
-
-    this.add(this.sliderOb);
   }
 }
