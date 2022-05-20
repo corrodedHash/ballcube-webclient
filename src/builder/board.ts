@@ -1,15 +1,8 @@
 import Layer, { PointerCoordinate } from "./layer";
 
-import {
-  Mesh,
-  MeshStandardMaterial,
-  Object3D,
-  Raycaster,
-  SphereGeometry,
-  Vector3,
-} from "three";
+import { Mesh, Object3D, Raycaster, SphereGeometry, Vector3 } from "three";
 import BoardLogic from "@/gamelogic";
-
+import * as material from "@/materials";
 import { BallID, GateID, GateType, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "@/util";
 import { ballSelector } from "@/materials";
@@ -108,11 +101,7 @@ export default class Board extends Object3D {
   select_ball(ball: BallID, silver: boolean) {
     this.balls[ball].silver = silver;
     this.balls[ball].placed = true;
-    (this.balls[ball].ob as any).material = new MeshStandardMaterial({
-      color: silver ? 0xdbdbdc : 0xffd700,
-      roughness: 0.5,
-      metalness: 0.3,
-    });
+    (this.balls[ball].ob as any).material = material.ball(silver);
 
     return this.balls.filter((v) => v.placed).length === 8;
   }
@@ -124,12 +113,14 @@ export default class Board extends Object3D {
 
     if (o === undefined) return undefined;
 
-    for (const l of [0, 1, 2, 3] as Array<LayerID>) {
-      const pointer = this.l[l].hasPointer(o.object);
-      if (pointer !== undefined) return { ...pointer, layer: l };
-    }
+    const found_pointer = Object.entries(this.l)
+      .map(
+        ([k, l]) => [parseInt(k) as LayerID, l.hasPointer(o.object)] as const
+      )
+      .filter(([_, p]) => p !== undefined)
+      .map(([l, p]) => ({ ...(p as PointerCoordinate), layer: l }));
 
-    return undefined;
+    return found_pointer[0];
   }
 
   highlight_pointer(layer: LayerID, pointer: PointerCoordinate) {
