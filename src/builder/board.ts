@@ -12,6 +12,7 @@ import BoardLogic from "@/gamelogic";
 
 import { BallID, GateID, GateType, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "@/util";
+import { ballSelector } from "@/materials";
 
 interface BallObject {
   ob: Object3D;
@@ -60,18 +61,12 @@ export default class Board extends Object3D {
 
     for (let row = -1; row < 2; row++) {
       for (let column = -1; column < 2; column++) {
-        const s = new Mesh(
-          new SphereGeometry(1, 60, 40),
-          new MeshStandardMaterial({
-            color: 0xff0000,
-            transparent: true,
-            opacity: 0.5,
-            emissive: 0x0000ff,
-            emissiveIntensity: 0,
-          })
-        );
+        const s = new Mesh(new SphereGeometry(1, 60, 40), ballSelector());
         s.name = `Ball_${column + 1}_${row + 1}`;
-        s.position.addVectors(s.position, new Vector3(column * 5, 0, row * 5));
+        s.position.addVectors(
+          s.position,
+          new Vector3(column * 5, 1.25, row * 5)
+        );
         balls.push({ ob: s, silver: true, placed: false });
       }
     }

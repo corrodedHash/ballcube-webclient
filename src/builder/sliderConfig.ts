@@ -7,7 +7,7 @@ import {
   Raycaster,
 } from "three";
 import { SliderLibrary, SliderObject, Tuple } from "@/util";
-
+import * as material from "@/materials";
 export default class SliderConfigurator extends Object3D {
   private sliderLibrary: SliderLibrary;
 
@@ -44,13 +44,7 @@ export default class SliderConfigurator extends Object3D {
 
       const peg = new Mesh(
         new CylinderGeometry(1.5, 1.5, 2, 10),
-        new MeshStandardMaterial({
-          color: 0xff0000,
-          emissive: 0x0000ff,
-          opacity: 0.4,
-          transparent: true,
-          emissiveIntensity: 0,
-        })
+        material.peg(false)
       );
 
       peg.position.setY(1);
@@ -63,9 +57,7 @@ export default class SliderConfigurator extends Object3D {
     this.optionPegs = optionPegs;
 
     this.sliderOb = this.sliderLibrary[this.gateType].clone(true);
-    this.sliderOb.material = new MeshStandardMaterial({
-      color: this.silver ? 0xffffff : 0xffd700,
-    });
+    this.sliderOb.material = material.slider(this.silver, false);
 
     this.add(this.sliderOb);
   }
@@ -86,20 +78,18 @@ export default class SliderConfigurator extends Object3D {
     if (this.gateType !== gatetype) {
       this.remove(this.sliderOb);
       this.sliderOb = this.sliderLibrary[gatetype].clone(true);
-      this.sliderOb.material = new MeshStandardMaterial({
-        color: this.silver ? 0xffffff : 0xffd700,
-      });
+      this.sliderOb.material = material.slider(this.silver, false);
       this.add(this.sliderOb);
       this.gateType = gatetype;
     }
 
     const p = this.optionPegs[gatetype];
-    if (p !== undefined) p.material.emissiveIntensity = 1;
+    if (p !== undefined) p.material = material.peg(true);
   }
 
   unhighlight() {
     this.optionPegs.forEach((v) => {
-      if (v !== undefined) v.material.emissiveIntensity = 0;
+      if (v !== undefined) v.material = material.peg(false);
     });
   }
 }

@@ -7,6 +7,7 @@ import {
   Tuple,
 } from "@/util";
 
+import * as material from "@/materials";
 interface SliderInfo {
   ob: SliderObject;
   topleft: boolean;
@@ -35,11 +36,7 @@ export default class Layer extends Object3D {
     this.sliders = bla.map((v) => {
       return { ob: v as any, topleft: true, depth: 0, ownedBySilver: true };
     }) as [SliderInfo, SliderInfo, SliderInfo];
-    (layer as any).material = new MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.8,
-    });
+    (layer as any).material = material.layer();
     this.add(layer);
     this.add(...bla);
     this.horizontal = false;
@@ -55,13 +52,22 @@ export default class Layer extends Object3D {
   }
 
   highlight_slider(gate: GateID) {
-    this.sliders[gate].ob.material.emissive.r = 0.5;
+    this.sliders[gate].ob.material = material.slider(
+      this.sliders[gate].ownedBySilver,
+      true
+    );
   }
 
   unhighlight_slider() {
-    this.sliders[0].ob.material.emissive.r = 0;
-    this.sliders[1].ob.material.emissive.r = 0;
-    this.sliders[2].ob.material.emissive.r = 0;
+    const normal_slider = (gateid: GateID) =>
+      (this.sliders[gateid].ob.material = material.slider(
+        this.sliders[gateid].ownedBySilver,
+        false
+      ));
+
+    normal_slider(0);
+    normal_slider(1);
+    normal_slider(2);
   }
 
   private update() {
@@ -113,11 +119,10 @@ export default class Layer extends Object3D {
 
     this.sliders[id].ob = this.sliderLibrary[type].clone(true);
 
-    this.sliders[id].ob.material = new MeshStandardMaterial({
-      color: this.sliders[id].ownedBySilver ? 0xffffff : 0xffd700,
-      roughness: 0.5,
-      metalness: 0.3,
-    });
+    this.sliders[id].ob.material = material.slider(
+      this.sliders[id].ownedBySilver,
+      false
+    );
 
     this.add(this.sliders[id].ob);
     this.update();

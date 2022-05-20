@@ -9,6 +9,7 @@ import {
   Raycaster,
 } from "three";
 
+import * as material from "@/materials";
 import BoardLogic from "../gamelogic";
 import { BallDepth, GateID, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "../util";
@@ -47,11 +48,7 @@ export default class Board extends Object3D {
         const b = logic.balls[column + 1 + 3 * (row + 1)];
         const s = new Mesh(
           new SphereGeometry(1, 60, 40),
-          new MeshStandardMaterial({
-            color: b.silver ? 0xdbdbdc : 0xffd700,
-            roughness: 0.5,
-            metalness: 0.3,
-          })
+          material.ball(b.silver)
         );
         s.name = `Ball_${column + 1}_${row + 1}`;
         s.position.addVectors(s.position, new Vector3(column * 5, 0, row * 5));

@@ -13,6 +13,7 @@ import {
   Tuple,
 } from "@/util";
 import SliderConfigurator from "./sliderConfig";
+import * as material from "@/materials";
 
 interface SliderInfo extends GateInfo {
   ob: SliderObject;
@@ -75,10 +76,7 @@ export default class Layer extends Object3D {
       };
 
       Object.entries(coords).map(([k, [x, z, r]]) => {
-        let p = new Mesh(
-          triangleMesh(),
-          new MeshStandardMaterial({ color: 0xff0000 })
-        );
+        let p = new Mesh(triangleMesh(), material.pointer(false));
 
         p.name = `${k}_${id}`;
         p.position.set(x, 0, z);
@@ -91,7 +89,9 @@ export default class Layer extends Object3D {
 
     this.pointers = pointers as typeof this.pointers;
 
-    this.add(layer);
+    const new_layer = layer.clone(true);
+    (new_layer as any).material = material.layer();
+    this.add(new_layer);
   }
 
   hasPointer(ob: Object3D): PointerCoordinate | undefined {
@@ -128,11 +128,13 @@ export default class Layer extends Object3D {
       (pointer.topleft ? 0 : 1) +
       2 * (pointer.horizontal ? 1 : 0);
 
-    (this.pointers[pointer_id] as any).material.emissive.b = 0.7;
+    (this.pointers[pointer_id] as any).material = material.pointer(true);
   }
 
   unhighlight_pointers() {
-    this.pointers.forEach((v) => ((v as any).material.emissive.b = 0));
+    this.pointers.forEach(
+      (v) => ((v as any).material = material.pointer(false))
+    );
   }
 
   select_pointer(
@@ -181,9 +183,7 @@ export default class Layer extends Object3D {
 
     const s = this.sliderLibrary[gatetype].clone(true);
     positionSliderInLayer(s, horizontal, topleft, gate, 0, 5);
-    s.material = new MeshStandardMaterial({
-      color: ownerSilver ? 0xffffff : 0xffd700,
-    });
+    s.material = material.slider(ownerSilver, false);
     if (this.currentSlider !== undefined) this.remove(this.currentSlider);
     this.currentSlider = undefined;
 

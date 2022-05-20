@@ -80,7 +80,7 @@ export default class BuildLoop implements Loop {
             );
             this.silverAtPlay = !this.silverAtPlay;
             if (balls_finished) {
-              finishCallback(this.board.generateLogic(this.silverAtPlay));
+              this.finishCallback(this.board.generateLogic(this.silverAtPlay));
             }
           }
         } else {

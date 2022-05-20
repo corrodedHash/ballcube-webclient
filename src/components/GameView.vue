@@ -12,10 +12,10 @@ import {
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ref, watch } from "vue";
-import Board from "@/board";
+import Board from "@/player/board";
 import BuilderBoard from "@/builder/board";
 import { generateTestBoardLogic } from "@/test";
-import GameLoop from "@/gameloop";
+import GameLoop from "@/player/gameloop";
 import { loadLayer, loadSliderLibrary } from "@/util";
 import BuildLoop from "@/builder/buildloop";
 const hey = ref(null as null | HTMLDivElement);
