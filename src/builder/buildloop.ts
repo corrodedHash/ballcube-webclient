@@ -95,13 +95,13 @@ export default class BuildLoop implements Loop {
   }
 
   start() {
-    this.element.addEventListener("mousemove", this.listeners["move"]);
-    this.element.addEventListener("mousedown", this.listeners["down"]);
+    this.element.addEventListener("mousemove", this.listeners.move);
+    this.element.addEventListener("mousedown", this.listeners.down);
   }
 
   stop() {
-    this.element.removeEventListener("mousemove", this.listeners["move"]);
-    this.element.removeEventListener("mousedown", this.listeners["down"]);
+    this.element.removeEventListener("mousemove", this.listeners.move);
+    this.element.removeEventListener("mousedown", this.listeners.down);
   }
 
   tick() {

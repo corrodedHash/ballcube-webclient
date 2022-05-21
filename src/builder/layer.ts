@@ -108,7 +108,7 @@ export default class Layer extends Object3D {
   }
 
   show_pointers() {
-    this.pointers.map((v, index) => {
+    this.pointers.forEach((v, index) => {
       if (this.definedSliders[Math.floor(index / 4)] !== undefined) return;
       if (this.horizontal !== undefined) {
         const index_horizontal = index % 4 >= 2;
@@ -118,6 +118,7 @@ export default class Layer extends Object3D {
       } else this.add(v);
     });
   }
+
   hide_pointers() {
     this.pointers.map((v) => this.remove(v));
   }
