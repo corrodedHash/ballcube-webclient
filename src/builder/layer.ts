@@ -1,6 +1,7 @@
 import {
   ExtrudeGeometry,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   Shape,
@@ -48,6 +49,8 @@ function triangleMesh() {
   return geometry;
 }
 
+type PointerMesh = Mesh<ExtrudeGeometry, MeshStandardMaterial>;
+
 export default class Layer extends Object3D {
   private sliderLibrary: SliderLibrary;
 
@@ -57,7 +60,7 @@ export default class Layer extends Object3D {
 
   private currentSlider: SliderConfigurator | undefined;
 
-  private pointers: Tuple<Object3D, 12>;
+  private pointers: Tuple<PointerMesh, 12>;
 
   constructor(layer: Object3D, sliders: SliderLibrary) {
     super();
@@ -65,7 +68,7 @@ export default class Layer extends Object3D {
 
     this.definedSliders = [undefined, undefined, undefined];
 
-    const pointers = [] as Array<Object3D>;
+    const pointers = [] as Array<PointerMesh>;
 
     for (let id = -1; id < 2; id++) {
       const coords = {
@@ -76,7 +79,7 @@ export default class Layer extends Object3D {
       };
 
       Object.entries(coords).map(([k, [x, z, r]]) => {
-        let p = new Mesh(triangleMesh(), material.pointer(false));
+        const p = new Mesh(triangleMesh(), material.pointer(false));
 
         p.name = `${k}_${id}`;
         p.position.set(x, 0, z);
@@ -90,12 +93,13 @@ export default class Layer extends Object3D {
     this.pointers = pointers as typeof this.pointers;
 
     const new_layer = layer.clone(true);
-    (new_layer as any).material = material.layer();
+    (new_layer as Object3D<Event> & { material: MeshBasicMaterial }).material =
+      material.layer();
     this.add(new_layer);
   }
 
   hasPointer(ob: Object3D): PointerCoordinate | undefined {
-    const i = this.pointers.indexOf(ob);
+    const i = this.pointers.indexOf(ob as PointerMesh);
     if (i === -1) return undefined;
     const slot = Math.floor(i / 4);
     const type = i % 4;
@@ -124,18 +128,16 @@ export default class Layer extends Object3D {
   }
 
   highlight_pointer(pointer: PointerCoordinate) {
-    let pointer_id =
+    const pointer_id =
       pointer.gate * 4 +
       (pointer.topleft ? 0 : 1) +
       2 * (pointer.horizontal ? 1 : 0);
 
-    (this.pointers[pointer_id] as any).material = material.pointer(true);
+    this.pointers[pointer_id].material = material.pointer(true);
   }
 
   unhighlight_pointers() {
-    this.pointers.forEach(
-      (v) => ((v as any).material = material.pointer(false))
-    );
+    this.pointers.forEach((v) => (v.material = material.pointer(false)));
   }
 
   select_pointer(
@@ -212,7 +214,7 @@ export default class Layer extends Object3D {
           topleft: v.topleft,
           type: v.type,
         } as GateInfo;
-      }) as any,
+      }) as Tuple<GateInfo, 3>,
     };
   }
 }

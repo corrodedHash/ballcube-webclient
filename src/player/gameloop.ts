@@ -13,8 +13,8 @@ export default class GameLoop implements Loop {
   private element: HTMLElement;
 
   private listeners: {
-    move: (this: HTMLElement, ev: MouseEvent) => any;
-    down: (this: HTMLElement, ev: MouseEvent) => any;
+    move: (this: HTMLElement, ev: MouseEvent) => void;
+    down: (this: HTMLElement, ev: MouseEvent) => void;
   };
 
   constructor(

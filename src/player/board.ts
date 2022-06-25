@@ -5,7 +5,6 @@ import {
   SphereGeometry,
   Vector3,
   Mesh,
-  MeshStandardMaterial,
   Raycaster,
 } from "three";
 
@@ -57,7 +56,7 @@ export default class Board extends Object3D {
     }
     this.l = layers;
 
-    this.balls = balls as any;
+    this.balls = balls as Tuple<BallObject, 9>;
 
     this.add(...this.l);
     this.add(...this.balls.map((v) => v.ob));

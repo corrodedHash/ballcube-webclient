@@ -11,16 +11,17 @@ export default class BuildLoop implements Loop {
   private camera: Camera;
   private raycaster: Raycaster;
   private element: HTMLElement;
-  private sliderConfig:
-    | ({ slider: SliderConfigurator; layer: LayerID } & PointerCoordinate)
-    | undefined;
-  private ballPlacement: boolean = false;
+  private sliderConfig?: {
+    slider: SliderConfigurator;
+    layer: LayerID;
+  } & PointerCoordinate;
+  private ballPlacement = false;
 
   private finishCallback: (logic: BoardLogic) => void;
 
   private listeners: {
-    move: (this: HTMLElement, ev: MouseEvent) => any;
-    down: (this: HTMLElement, ev: MouseEvent) => any;
+    move: (this: HTMLElement, ev: MouseEvent) => void;
+    down: (this: HTMLElement, ev: MouseEvent) => void;
   };
 
   private silverAtPlay: boolean;

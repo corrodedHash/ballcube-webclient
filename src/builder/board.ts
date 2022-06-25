@@ -1,14 +1,28 @@
 import Layer, { PointerCoordinate } from "./layer";
 
-import { Mesh, Object3D, Raycaster, SphereGeometry, Vector3 } from "three";
+import {
+  Mesh,
+  MeshStandardMaterial,
+  Object3D,
+  Raycaster,
+  SphereGeometry,
+  Vector3,
+} from "three";
 import BoardLogic from "@/gamelogic";
 import * as material from "@/materials";
-import { BallID, GateID, GateType, LayerID } from "@/boardTypes";
+import {
+  BallID,
+  BallInfo,
+  GateID,
+  GateType,
+  LayerID,
+  LayerInfo,
+} from "@/boardTypes";
 import { SliderLibrary, Tuple } from "@/util";
 import { ballSelector } from "@/materials";
 
 interface BallObject {
-  ob: Object3D;
+  ob: Mesh<SphereGeometry, MeshStandardMaterial>;
   silver: boolean;
   placed: boolean;
 }
@@ -91,17 +105,17 @@ export default class Board extends Object3D {
 
   highlight_ball(ball: BallID) {
     console.assert(this.balls[ball].placed === false);
-    (this.balls[ball].ob as any).material.emissiveIntensity = 1;
+    this.balls[ball].ob.material.emissiveIntensity = 1;
   }
 
   unhighlight_balls() {
-    this.balls.forEach((v) => ((v.ob as any).material.emissiveIntensity = 0));
+    this.balls.forEach((v) => (v.ob.material.emissiveIntensity = 0));
   }
 
   select_ball(ball: BallID, silver: boolean) {
     this.balls[ball].silver = silver;
     this.balls[ball].placed = true;
-    (this.balls[ball].ob as any).material = material.ball(silver);
+    this.balls[ball].ob.material = material.ball(silver);
 
     return this.balls.filter((v) => v.placed).length === 8;
   }
@@ -142,9 +156,9 @@ export default class Board extends Object3D {
       ? this.leftoverTypes.silver
       : this.leftoverTypes.gold;
 
-    let allowedGates = Object.entries(gate_types)
-      .filter(([k, v]) => v !== 0)
-      .map(([k, v]) => parseInt(k) as GateType);
+    const allowedGates = Object.entries(gate_types)
+      .filter(([_k, v]) => v !== 0)
+      .map(([k, _v]) => parseInt(k) as GateType);
 
     this.l.map((v) => v.hide_pointers());
 
@@ -177,10 +191,10 @@ export default class Board extends Object3D {
 
   generateLogic(startingPlayerSilver: boolean) {
     return new BoardLogic(
-      this.l.map((v) => v.generateLogic()) as any,
+      this.l.map((v) => v.generateLogic()) as Tuple<LayerInfo, 4>,
       this.balls.map((v) => {
         return { depth: v.placed ? 0 : 4, silver: v.silver };
-      }) as any,
+      }) as Tuple<BallInfo, 9>,
       startingPlayerSilver
     );
   }

@@ -1,4 +1,4 @@
-import { MeshBasicMaterial, MeshStandardMaterial, Object3D } from "three";
+import { MeshBasicMaterial, Object3D } from "three";
 import { GateDepth, GateID, GateType } from "@/boardTypes";
 import {
   positionSliderInLayer,
@@ -33,10 +33,11 @@ export default class Layer extends Object3D {
     bla[1].name = "Slider1";
     bla[2].name = "Slider2";
 
-    this.sliders = bla.map((v) => {
-      return { ob: v as any, topleft: true, depth: 0, ownedBySilver: true };
+    this.sliders = bla.map((ob) => {
+      return { ob, topleft: true, depth: 0, ownedBySilver: true };
     }) as [SliderInfo, SliderInfo, SliderInfo];
-    (layer as any).material = material.layer();
+    (layer as Object3D<Event> & { material: MeshBasicMaterial }).material =
+      material.layer();
     this.add(layer);
     this.add(...bla);
     this.horizontal = false;

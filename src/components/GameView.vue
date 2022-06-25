@@ -12,9 +12,8 @@ import {
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ref, watch } from "vue";
-import Board from "@/player/board";
+import PlayerBoard from "@/player/board";
 import BuilderBoard from "@/builder/board";
-import { generateTestBoardLogic } from "@/test";
 import GameLoop from "@/player/gameloop";
 import { loadLayer, loadSliderLibrary } from "@/util";
 import BuildLoop from "@/builder/buildloop";
@@ -33,10 +32,10 @@ async function setup_render(element: HTMLDivElement) {
 
   const scene = new Scene();
 
-  var light = new AmbientLight(0x404040, 1);
+  const light = new AmbientLight(0x404040, 1);
   scene.add(light);
 
-  var spotlight_left = new DirectionalLight(0xffffff, 0.7);
+  const spotlight_left = new DirectionalLight(0xffffff, 0.7);
   spotlight_left.position.set(-80, 0, 80);
   spotlight_left.lookAt(0, 0, 0);
   scene.add(spotlight_left);
@@ -59,7 +58,7 @@ async function setup_render(element: HTMLDivElement) {
     camera,
     buildboard,
     (logic) => {
-      const gameboard = new Board(logic, layerModel, sliderLibrary);
+      const gameboard = new PlayerBoard(logic, layerModel, sliderLibrary);
       gameboard.position.addVectors(gameboard.position, new Vector3(0, 12, 0));
       gameboard.rotateX(Math.PI / 8);
       usedLoop.value?.stop();
@@ -82,7 +81,7 @@ async function setup_render(element: HTMLDivElement) {
 
   usedLoop.value?.start();
 
-  function animate(time: DOMHighResTimeStamp) {
+  function animate(_time: DOMHighResTimeStamp) {
     requestAnimationFrame(animate);
 
     controls.update();
