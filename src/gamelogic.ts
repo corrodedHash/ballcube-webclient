@@ -1,37 +1,32 @@
-import { BallID, BallInfo, GateID, LayerID, LayerInfo } from "@/boardTypes";
+import {
+  BallDepth,
+  BallID,
+  BallInfo,
+  GateID,
+  LayerID,
+  LayerInfo,
+} from "@/boardTypes";
+import { Tuple } from "./util";
 
 export default class BoardLogic {
-  layers: [LayerInfo, LayerInfo, LayerInfo, LayerInfo];
-  balls: [
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo,
-    BallInfo
-  ];
+  layers: Tuple<LayerInfo, 4>;
+  balls: Tuple<BallInfo, 9>;
   silverAtPlay: boolean;
 
+  private moveList: Array<{
+    layer: LayerID;
+    gate: GateID;
+    balls: Array<{ ball: BallID; dropDepth: number }>;
+  }>;
+
   constructor(
-    layers: [LayerInfo, LayerInfo, LayerInfo, LayerInfo],
-    balls: [
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo,
-      BallInfo
-    ],
+    layers: Tuple<LayerInfo, 4>,
+    balls: Tuple<BallInfo, 9>,
     silverAtPlay: boolean
   ) {
     this.layers = layers;
     this.balls = balls;
+    this.moveList = [];
     this.silverAtPlay = silverAtPlay;
     this.dropBalls();
   }
@@ -100,6 +95,28 @@ export default class BoardLogic {
   shift(layer: LayerID, gate: GateID): Partial<Record<BallID, number>> {
     this.layers[layer].gate[gate].depth += 1;
 
-    return this.dropBalls();
+    const dropped_balls = this.dropBalls();
+
+    this.moveList.push({
+      layer,
+      gate,
+      balls: Object.keys(dropped_balls).map((v) => {
+        return {
+          ball: parseInt(v) as BallID,
+          dropDepth: dropped_balls[parseInt(v) as BallID] as number,
+        };
+      }),
+    });
+
+    return dropped_balls;
+  }
+
+  undo() {
+    const last_move = this.moveList.pop();
+    if (last_move === undefined) return;
+    this.layers[last_move.layer].gate[last_move.gate].depth -= 1;
+    for (const b of last_move.balls) {
+      this.balls[b.ball].depth -= b.dropDepth;
+    }
   }
 }

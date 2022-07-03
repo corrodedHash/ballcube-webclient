@@ -38,6 +38,9 @@ export default class Board extends Object3D {
     | (PointerCoordinate & { layer: LayerID })
     | undefined;
 
+  private ballPlacementOrder: Array<BallID>;
+  private gatePlacementOrder: Array<{ layer: LayerID; gate: GateID }>;
+
   constructor(layerGLTF: Object3D, sliderLibrary: SliderLibrary) {
     super();
 
@@ -54,6 +57,9 @@ export default class Board extends Object3D {
       silver: { ...defaultGateCounts },
       gold: { ...defaultGateCounts },
     };
+
+    this.ballPlacementOrder = [];
+    this.gatePlacementOrder = [];
 
     const layers = [...Array(4).keys()].map((v, i) => {
       const l = new Layer(layerGLTF.clone(), sliderLibrary);
@@ -116,6 +122,7 @@ export default class Board extends Object3D {
     this.balls[ball].silver = silver;
     this.balls[ball].placed = true;
     this.balls[ball].ob.material = material.ball(silver);
+    this.ballPlacementOrder.push(ball);
 
     return this.balls.filter((v) => v.placed).length === 8;
   }
@@ -184,9 +191,27 @@ export default class Board extends Object3D {
     this.unhighlight_pointer();
     this.l.map((v) => v.show_pointers());
 
+    this.gatePlacementOrder.push({ layer, gate });
+
     return Object.values(this.leftoverTypes).every((v) =>
       Object.values(v).every((v) => v === 0)
     );
+  }
+
+  undo() {
+    if (this.ballPlacementOrder.length === 0) {
+      if (this.gatePlacementOrder.length === 0) {
+        return;
+      }
+      const last_gate =
+        this.gatePlacementOrder[this.gatePlacementOrder.length - 1];
+      this.l[last_gate.layer].remove_slider(last_gate.gate);
+    } else {
+      const last_ball =
+        this.ballPlacementOrder[this.ballPlacementOrder.length - 1];
+      this.balls[last_ball].placed = false;
+      this.balls[last_ball].ob.material = ballSelector();
+    }
   }
 
   generateLogic(startingPlayerSilver: boolean) {

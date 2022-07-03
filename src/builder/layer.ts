@@ -172,6 +172,14 @@ export default class Layer extends Object3D {
     return this.currentSlider;
   }
 
+  remove_slider(gate: GateID): GateType {
+    const ds = this.definedSliders[gate];
+    if (ds === undefined) throw new Error("Trying to remove unset slider");
+    this.remove(ds.ob);
+    this.definedSliders[gate] = undefined;
+    return ds.type;
+  }
+
   set_slider(
     gate: GateID,
     horizontal: boolean,

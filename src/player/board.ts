@@ -1,16 +1,10 @@
 import Layer from "./layer";
 
-import {
-  Object3D,
-  SphereGeometry,
-  Vector3,
-  Mesh,
-  Raycaster,
-} from "three";
+import { Object3D, SphereGeometry, Vector3, Mesh, Raycaster } from "three";
 
 import * as material from "@/materials";
 import BoardLogic from "../gamelogic";
-import { BallDepth, GateID, LayerID } from "@/boardTypes";
+import { BallDepth, BallID, GateID, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "../util";
 
 interface BallObject {
