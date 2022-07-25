@@ -111,12 +111,14 @@ export default class BoardLogic {
     return dropped_balls;
   }
 
-  undo() {
+  /// Returns true if move list was not empty
+  undo(): boolean {
     const last_move = this.moveList.pop();
-    if (last_move === undefined) return;
+    if (last_move === undefined) return false;
     this.layers[last_move.layer].gate[last_move.gate].depth -= 1;
     for (const b of last_move.balls) {
       this.balls[b.ball].depth -= b.dropDepth;
     }
+    return true;
   }
 }
