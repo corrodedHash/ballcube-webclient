@@ -1,4 +1,4 @@
-import { MeshBasicMaterial, MeshStandardMaterial } from "three";
+import { MeshStandardMaterial } from "three";
 
 export function ballSelector() {
   return new MeshStandardMaterial({
@@ -50,9 +50,7 @@ export function slider(silver: boolean, highlighted: boolean) {
 }
 
 export function layer() {
-  return new MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.8,
+  return new MeshStandardMaterial({
+    color: 0xc0c0c0,
   });
 }

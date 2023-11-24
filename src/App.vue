@@ -8,7 +8,7 @@
 import GameViewVue from "./components/GameView.vue";
 </script>
 
-<style lang="scss">
+<style>
 body {
   margin: 0;
 }

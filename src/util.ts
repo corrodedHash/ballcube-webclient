@@ -1,4 +1,4 @@
-import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GateDepth, GateID, GateType } from "@/boardTypes";
 
 import LayerModel from "@/assets/models/layer.glb";

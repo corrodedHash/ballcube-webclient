@@ -41,7 +41,7 @@ export default class Board extends Object3D {
   private ballPlacementOrder: Array<BallID>;
   private gatePlacementOrder: Array<{ layer: LayerID; gate: GateID }>;
 
-  constructor(layerGLTF: Object3D, sliderLibrary: SliderLibrary) {
+  constructor(layerGLTF: Mesh, sliderLibrary: SliderLibrary) {
     super();
 
     const distance = -10;
@@ -61,7 +61,7 @@ export default class Board extends Object3D {
     this.ballPlacementOrder = [];
     this.gatePlacementOrder = [];
 
-    const layers = [...Array(4).keys()].map((v, i) => {
+    const layers = [...Array(4).keys()].map((_, i) => {
       const l = new Layer(layerGLTF.clone(), sliderLibrary);
 
       l.name = `Layer_${i}`;

@@ -1,4 +1,4 @@
-import { Camera, Raycaster } from "three";
+import { Camera, Raycaster, Vector2 } from "three";
 import Board from "./board";
 import BoardLogic from "@/gamelogic";
 import Loop from "@/loop";
@@ -33,7 +33,7 @@ export default class GameLoop implements Loop {
       move: (ev: MouseEvent) => {
         const xRatio = (ev.offsetX / element.clientWidth) * 2 - 1;
         const yRatio = -((ev.offsetY / element.clientHeight) * 2 - 1);
-        this.raycaster.setFromCamera({ x: xRatio, y: yRatio }, this.camera);
+        this.raycaster.setFromCamera(new Vector2(xRatio, yRatio), this.camera);
       },
       down: (ev: MouseEvent) => {
         if (ev.button !== 2) return;

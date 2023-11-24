@@ -1,7 +1,6 @@
 import {
   ExtrudeGeometry,
   Mesh,
-  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   Shape,
@@ -62,7 +61,7 @@ export default class Layer extends Object3D {
 
   private pointers: Tuple<PointerMesh, 12>;
 
-  constructor(layer: Object3D, sliders: SliderLibrary) {
+  constructor(layer: Mesh, sliders: SliderLibrary) {
     super();
     this.sliderLibrary = sliders;
 
@@ -93,8 +92,7 @@ export default class Layer extends Object3D {
     this.pointers = pointers as typeof this.pointers;
 
     const new_layer = layer.clone(true);
-    (new_layer as Object3D<Event> & { material: MeshBasicMaterial }).material =
-      material.layer();
+    new_layer.material = material.layer();
     this.add(new_layer);
   }
 

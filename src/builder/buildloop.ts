@@ -1,7 +1,7 @@
 import BoardLogic from "@/gamelogic";
 import { LayerID } from "@/boardTypes";
 import Loop from "@/loop";
-import { Camera, Raycaster } from "three";
+import { Camera, Raycaster, Vector2 } from "three";
 import BuildBoard from "./board";
 import { PointerCoordinate } from "./layer";
 import SliderConfigurator from "./sliderConfig";
@@ -45,14 +45,14 @@ export default class BuildLoop implements Loop {
       move: (ev: MouseEvent) => {
         const xRatio = (ev.offsetX / element.clientWidth) * 2 - 1;
         const yRatio = -((ev.offsetY / element.clientHeight) * 2 - 1);
-        this.raycaster.setFromCamera({ x: xRatio, y: yRatio }, this.camera);
+        this.raycaster.setFromCamera(new Vector2(xRatio, yRatio), this.camera);
       },
       down: (ev: MouseEvent) => {
         if (ev.button !== 2) return;
 
         const xRatio = (ev.offsetX / element.clientWidth) * 2 - 1;
         const yRatio = -((ev.offsetY / element.clientHeight) * 2 - 1);
-        this.raycaster.setFromCamera({ x: xRatio, y: yRatio }, this.camera);
+        this.raycaster.setFromCamera(new Vector2(xRatio, yRatio), this.camera);
 
         if (this.sliderConfig !== undefined) {
           const gatetype = this.sliderConfig.slider.rayOption(this.raycaster);

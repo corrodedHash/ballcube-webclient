@@ -1,5 +1,4 @@
 import {
-  BallDepth,
   BallID,
   BallInfo,
   GateID,

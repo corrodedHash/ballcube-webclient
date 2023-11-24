@@ -4,7 +4,7 @@ import { Object3D, SphereGeometry, Vector3, Mesh, Raycaster } from "three";
 
 import * as material from "@/materials";
 import BoardLogic from "../gamelogic";
-import { BallDepth, BallID, GateID, LayerID } from "@/boardTypes";
+import { BallDepth, GateID, LayerID } from "@/boardTypes";
 import { SliderLibrary, Tuple } from "../util";
 
 interface BallObject {
@@ -26,7 +26,7 @@ export default class Board extends Object3D {
     super();
     const distance = -10;
 
-    const layers = [...Array(4).keys()].map((v, i) => {
+    const layers = [...Array(4).keys()].map((_, i) => {
       const l = new Layer(layerGLTF.clone(), sliderLibrary);
 
       l.name = `Layer_${i}`;
