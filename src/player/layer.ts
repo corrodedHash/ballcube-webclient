@@ -1,4 +1,4 @@
-import { MeshBasicMaterial, Object3D, Object3DEventMap } from "three";
+import { Mesh, Object3D } from "three";
 import { GateDepth, GateID, GateType } from "@/boardTypes";
 import {
   positionSliderInLayer,
@@ -21,7 +21,7 @@ export default class Layer extends Object3D {
   private horizontal: boolean;
   private sliders: Tuple<SliderInfo, 3>;
 
-  constructor(layer: Object3D, sliders: SliderLibrary) {
+  constructor(layer: Mesh, sliders: SliderLibrary) {
     super();
     this.sliderLibrary = sliders;
     const bla = [
@@ -36,8 +36,7 @@ export default class Layer extends Object3D {
     this.sliders = bla.map((ob) => {
       return { ob, topleft: true, depth: 0, ownedBySilver: true };
     }) as [SliderInfo, SliderInfo, SliderInfo];
-    (layer as Object3D<Object3DEventMap> & { material: MeshBasicMaterial }).material =
-      material.layer();
+    layer.material = material.layer();
     this.add(layer);
     this.add(...bla);
     this.horizontal = false;

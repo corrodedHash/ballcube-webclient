@@ -4,6 +4,7 @@
 import {
   AmbientLight,
   DirectionalLight,
+  Mesh,
   OrthographicCamera,
   Scene,
   Vector3,
@@ -43,7 +44,7 @@ async function setup_render(element: HTMLDivElement) {
   renderer.render(scene, camera);
   const layerModel = await loadLayer();
   const sliderLibrary = await loadSliderLibrary();
-  const buildboard = new BuilderBoard(layerModel, sliderLibrary);
+  const buildboard = new BuilderBoard(layerModel as Mesh, sliderLibrary);
   buildboard.position.addVectors(buildboard.position, new Vector3(0, 12, 0));
   buildboard.rotateX(Math.PI / 8);
 

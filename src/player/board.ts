@@ -27,7 +27,7 @@ export default class Board extends Object3D {
     const distance = -10;
 
     const layers = [...Array(4).keys()].map((_, i) => {
-      const l = new Layer(layerGLTF.clone(), sliderLibrary);
+      const l = new Layer(layerGLTF.clone() as Mesh, sliderLibrary);
 
       l.name = `Layer_${i}`;
       l.position.setY(distance * i);
