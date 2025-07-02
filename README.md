@@ -1,18 +1,47 @@
-# Vue 3 + TypeScript + Vite
+# BallCube
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A local implementation of the "BallCube" game using Vue.js, TypeScript, and Three.js.
 
-## Recommended IDE Setup
+## Features
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+- Interactive 3D graphics using Three.js.
+- Vue.js for building the user interface.
+- Local game state management.
 
-## Type Support For `.vue` Imports in TS
+## Usage
+1. Set planks
+    Silver and Gold player alternately push planks into the layers
+2. Place balls
+    Silver and Gold player alternately place balls on the top layer,
+    possibly already falling through holes in the planks
+3. Pull
+    Silver and Gold player take turn pulling one of their planks out of the
+    layers by one hole
+4. Win
+    The first player to have all balls of their color disappear, wins
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## Setup
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+To get started with the project, follow these steps:
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/corrodedHash/ballcube-webclient ballcube
+   cd ballcube
+   ```
+
+2. **Install**
+    ```bash
+    npm install
+    ```
+
+3. **Run**
+    ```bash
+    npm run dev
+    ```
+
+4. **Launch**  
+
+    Navigate to `localhost:5173` 
+
