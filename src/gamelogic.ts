@@ -1,11 +1,11 @@
 import {
-  BallID,
-  BallInfo,
-  GateID,
-  LayerID,
-  LayerInfo,
+  type BallID,
+  type BallInfo,
+  type GateID,
+  type LayerID,
+  type LayerInfo,
 } from "@/boardTypes";
-import { Tuple } from "./util";
+import { type Tuple } from "./util";
 
 export default class BoardLogic {
   layers: Tuple<LayerInfo, 4>;

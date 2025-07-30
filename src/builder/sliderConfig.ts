@@ -6,7 +6,7 @@ import {
   Object3D,
   Raycaster,
 } from "three";
-import { SliderLibrary, SliderObject, Tuple } from "@/util";
+import { type SliderLibrary, type SliderObject, type Tuple } from "@/util";
 import * as material from "@/materials";
 export default class SliderConfigurator extends Object3D {
   private sliderLibrary: SliderLibrary;

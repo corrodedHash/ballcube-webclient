@@ -1,47 +1,45 @@
-# BallCube
+# ballcube
 
-A local implementation of the "BallCube" game using Vue.js, TypeScript, and Three.js.
+This template should help get you started developing with Vue 3 in Vite.
 
-## Features
+## Recommended IDE Setup
 
-- Interactive 3D graphics using Three.js.
-- Vue.js for building the user interface.
-- Local game state management.
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Usage
-1. Set planks
-    Silver and Gold player alternately push planks into the layers
-2. Place balls
-    Silver and Gold player alternately place balls on the top layer,
-    possibly already falling through holes in the planks
-3. Pull
-    Silver and Gold player take turn pulling one of their planks out of the
-    layers by one hole
-4. Win
-    The first player to have all balls of their color disappear, wins
+## Type Support for `.vue` Imports in TS
 
-## Setup
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-To get started with the project, follow these steps:
+## Customize configuration
 
-1. **Clone the repository:**
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-   ```bash
-   git clone https://github.com/corrodedHash/ballcube-webclient ballcube
-   cd ballcube
-   ```
+## Project Setup
 
-2. **Install**
-    ```bash
-    npm install
-    ```
+```sh
+npm install
+```
 
-3. **Run**
-    ```bash
-    npm run dev
-    ```
+### Compile and Hot-Reload for Development
 
-4. **Launch**  
+```sh
+npm run dev
+```
 
-    Navigate to `localhost:5173` 
+### Type-Check, Compile and Minify for Production
 
+```sh
+npm run build
+```
+
+### Run Unit Tests with [Vitest](https://vitest.dev/)
+
+```sh
+npm run test:unit
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+npm run lint
+```

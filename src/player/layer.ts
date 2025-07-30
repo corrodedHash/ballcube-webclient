@@ -1,10 +1,10 @@
 import { Mesh, Object3D } from "three";
-import { GateDepth, GateID, GateType } from "@/boardTypes";
+import { type GateDepth, type GateID, GateType } from "@/boardTypes";
 import {
   positionSliderInLayer,
-  SliderLibrary,
-  SliderObject,
-  Tuple,
+  type SliderLibrary,
+  type SliderObject,
+  type Tuple,
 } from "@/util";
 
 import * as material from "@/materials";
